@@ -23,4 +23,7 @@ try {
   console.warn("Using fallback Supabase credentials.");
 }
 
+// DEBUG: Verificar conexión en consola del navegador (F12)
+console.log("🔌 Inicializando Supabase con URL:", supabaseUrl);
+
 export const supabase = createClient(supabaseUrl, supabaseKey);
