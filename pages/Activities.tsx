@@ -45,7 +45,7 @@ const Activities: React.FC = () => {
     setEditingItem(item);
     setFormData({ 
       name: item.name, 
-      description: item.description || '', 
+      description: item.description ?? '', 
       maxHours: item.maxHours,
       area: item.area 
     });
@@ -147,7 +147,7 @@ const Activities: React.FC = () => {
                 <textarea 
                   className="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={3}
-                  value={formData.description || ''}
+                  value={formData.description ?? ''}
                   onChange={e => setFormData({...formData, description: e.target.value})}
                 />
               </div>
