@@ -1,0 +1,100 @@
+
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+const Sidebar: React.FC = () => {
+  const location = useLocation();
+  const { role, currentUser, logout } = useAuth();
+
+  const NavItem = ({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) => {
+    const isActive = location.pathname === to;
+    return (
+      <Link
+        to={to}
+        className={`flex items-center space-x-3 px-6 py-3 transition-colors duration-200 ${
+          isActive 
+            ? 'bg-blue-600 text-white border-r-4 border-blue-800' 
+            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+        }`}
+      >
+        {icon}
+        <span className="font-medium">{label}</span>
+      </Link>
+    );
+  };
+
+  return (
+    <div className="w-64 bg-slate-900 min-h-screen flex flex-col fixed left-0 top-0 shadow-xl z-20">
+      <div className="h-20 flex items-center justify-center border-b border-slate-800 bg-slate-900">
+        <h1 className="text-2xl font-bold text-blue-400 tracking-wider">GEST<span className="text-white">ACAD</span></h1>
+      </div>
+      
+      <nav className="flex-1 py-6 space-y-1 overflow-y-auto">
+        {role === 'leader' && (
+          <>
+            <NavItem 
+              to="/" 
+              label="Dashboard" 
+              icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>} 
+            />
+            <NavItem 
+              to="/projects" 
+              label="Proyectos" 
+              icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>} 
+            />
+            <NavItem 
+              to="/assignments" 
+              label="Asignaciones" 
+              icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>} 
+            />
+            <NavItem 
+              to="/activities" 
+              label="Catálogo" 
+              icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>} 
+            />
+            <NavItem 
+              to="/teachers" 
+              label="Personas" 
+              icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>} 
+            />
+            <NavItem 
+              to="/reports" 
+              label="Reportes" 
+              icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>} 
+            />
+          </>
+        )}
+
+        {role === 'teacher' && (
+          <NavItem 
+            to="/portal" 
+            label="Mis Actividades" 
+            icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} 
+          />
+        )}
+      </nav>
+      
+      <div className="p-4 border-t border-slate-800 bg-slate-900">
+        <div className="mb-4">
+          <p className="text-xs text-slate-500 uppercase font-bold">Usuario</p>
+          <p className="text-sm text-white font-medium truncate">
+            {role === 'leader' ? 'Líder de Área' : currentUser?.name}
+          </p>
+          <p className="text-xs text-slate-400 truncate">
+            {role === 'leader' ? 'Administrador' : currentUser?.email}
+          </p>
+        </div>
+        <button 
+          onClick={logout}
+          className="flex items-center text-red-400 hover:text-red-300 transition-colors w-full"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+          <span className="text-sm font-medium">Cerrar Sesión</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;
