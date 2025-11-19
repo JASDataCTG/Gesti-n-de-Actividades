@@ -17,7 +17,7 @@ export type ActivityArea =
 export interface ActivityCatalogItem {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   maxHours: number; // Maximum hours allowed for this type of activity per period
   area: ActivityArea;
 }
@@ -32,7 +32,7 @@ export interface Assignment {
   id: string;
   activityCatalogId: string; // Links to the definition
   teacherId: string;
-  projectId?: string; // Optional association
+  projectId?: string | null; // Optional association
   allocatedHours: number;
   startDate: string;
   endDate: string;
@@ -43,17 +43,17 @@ export interface Assignment {
   status: 'Planificado' | 'En Progreso' | 'Completado';
   
   // Teacher Inputs
-  evidenceUrl?: string; // URL to Drive/Evidence
-  achievementDescription?: string; // Descripción del logro
+  evidenceUrl?: string | null; // URL to Drive/Evidence
+  achievementDescription?: string | null; // Descripción del logro
   
   // Leader/Evaluator Inputs
-  review1Date?: string; // Fecha revisión momento 1
-  progress1?: number; // Avance momento 1 (Max 50)
-  observation1?: string; // Observaciones momento 1
+  review1Date?: string | null; // Fecha revisión momento 1
+  progress1?: number | null; // Avance momento 1 (Max 50)
+  observation1?: string | null; // Observaciones momento 1
 
-  review2Date?: string; // Fecha revisión momento 2
-  progress2?: number; // Avance momento 2 (Max 50)
-  observation2?: string; // Observaciones momento 2
+  review2Date?: string | null; // Fecha revisión momento 2
+  progress2?: number | null; // Avance momento 2 (Max 50)
+  observation2?: string | null; // Observaciones momento 2
 }
 
 // Combined type for reporting
