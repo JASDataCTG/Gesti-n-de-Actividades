@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DataProvider } from './context/DataContext';
@@ -40,6 +39,7 @@ const AppContent: React.FC = () => {
               ) : (
                 <>
                   <Route path="/portal" element={<TeacherPortal />} />
+                  <Route path="/reports" element={<Reports />} />
                   <Route path="*" element={<Navigate to="/portal" replace />} />
                 </>
               )}

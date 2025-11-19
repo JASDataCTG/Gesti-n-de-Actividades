@@ -1,12 +1,18 @@
-
 import React from 'react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { AssignmentReportRow } from '../types';
 
 const Reports: React.FC = () => {
   const { assignments, teachers, activities, projects } = useData();
+  const { role, currentUser } = useAuth();
 
-  const reportData: AssignmentReportRow[] = assignments.map(a => {
+  // Filter assignments based on role
+  const filteredAssignments = (role === 'teacher' && currentUser)
+    ? assignments.filter(a => a.teacherId === currentUser.id)
+    : assignments;
+
+  const reportData: AssignmentReportRow[] = filteredAssignments.map(a => {
     const activity = activities.find(ac => ac.id === a.activityCatalogId);
     return {
       ...a,
@@ -57,7 +63,7 @@ const Reports: React.FC = () => {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "reporte_actividades_ctei.csv");
+    link.setAttribute("download", role === 'teacher' ? "mi_reporte_actividades.csv" : "reporte_consolidado_ctei.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -66,7 +72,9 @@ const Reports: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-slate-800">Reporte Consolidado de Avances</h1>
+        <h1 className="text-3xl font-bold text-slate-800">
+          {role === 'teacher' ? 'Mi Reporte de Actividades' : 'Reporte Consolidado de Avances'}
+        </h1>
         <button onClick={handleExport} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm flex items-center">
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
           Exportar CSV
@@ -99,10 +107,12 @@ const Reports: React.FC = () => {
                 <td className="px-4 py-3 text-center text-sm text-slate-600">
                     {row.progress1 || 0}%
                     {row.review1Date && <div className="text-[10px] text-slate-400">{row.review1Date}</div>}
+                    {row.observation1 && <div className="text-[10px] text-blue-500 italic truncate max-w-[100px]" title={row.observation1}>Obs: {row.observation1}</div>}
                 </td>
                 <td className="px-4 py-3 text-center text-sm text-slate-600">
                     {row.progress2 || 0}%
                     {row.review2Date && <div className="text-[10px] text-slate-400">{row.review2Date}</div>}
+                    {row.observation2 && <div className="text-[10px] text-blue-500 italic truncate max-w-[100px]" title={row.observation2}>Obs: {row.observation2}</div>}
                 </td>
                 <td className="px-4 py-3 text-center">
                     <span className={`font-bold ${row.totalProgress === 100 ? 'text-green-600' : 'text-blue-600'}`}>
