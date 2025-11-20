@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { Project } from '../types';
@@ -19,6 +18,12 @@ const Projects: React.FC = () => {
     setEditingItem(item);
     setFormData({ name: item.name, code: item.code });
     setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm('¿Está seguro que desea eliminar este proyecto? Esta acción no se puede deshacer.')) {
+      deleteProject(id);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -63,7 +68,7 @@ const Projects: React.FC = () => {
                 <td className="px-6 py-4 text-sm text-slate-900">{proj.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button onClick={() => handleOpenEdit(proj)} className="text-blue-600 hover:text-blue-900 mr-4">Editar</button>
-                  <button onClick={() => deleteProject(proj.id)} className="text-red-600 hover:text-red-900">Eliminar</button>
+                  <button onClick={() => handleDelete(proj.id)} className="text-red-600 hover:text-red-900">Eliminar</button>
                 </td>
               </tr>
             ))}

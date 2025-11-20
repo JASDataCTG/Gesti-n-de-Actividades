@@ -51,6 +51,12 @@ const Activities: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const handleDelete = (id: string) => {
+    if (window.confirm('¿Está seguro que desea eliminar esta actividad? Esta acción no se puede deshacer.')) {
+      deleteActivity(id);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingItem) {
@@ -105,7 +111,7 @@ const Activities: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button onClick={() => handleOpenEdit(act)} className="text-blue-600 hover:text-blue-900 mr-4">Editar</button>
-                  <button onClick={() => deleteActivity(act.id)} className="text-red-600 hover:text-red-900">Eliminar</button>
+                  <button onClick={() => handleDelete(act.id)} className="text-red-600 hover:text-red-900">Eliminar</button>
                 </td>
               </tr>
             ))}

@@ -25,6 +25,17 @@ const Reports: React.FC = () => {
     };
   });
 
+  // Calculate Summary Stats
+  const totalItems = reportData.length;
+  const avgProgress = totalItems > 0 
+    ? Math.round(reportData.reduce((acc, curr) => acc + curr.totalProgress, 0) / totalItems) 
+    : 0;
+  const statusCounts = {
+    planificado: reportData.filter(r => r.status === 'Planificado').length,
+    enProgreso: reportData.filter(r => r.status === 'En Progreso').length,
+    completado: reportData.filter(r => r.status === 'Completado').length,
+  };
+
   const handleExport = () => {
     const headers = [
       'ID Asignación', 
@@ -54,10 +65,9 @@ const Reports: React.FC = () => {
       'URL Evidencia'
     ];
     
-    // CORRECCIÓN: Helper seguro que maneja strings, números y nulos
+    // Helper seguro que maneja strings, números y nulos
     const esc = (value: any) => {
         if (value === null || value === undefined) return '""';
-        // Forzamos la conversión a String antes de hacer replace para evitar errores con números
         return `"${String(value).replace(/"/g, '""').replace(/\n/g, ' ')}"`;
     };
 
@@ -76,7 +86,7 @@ const Reports: React.FC = () => {
           esc(e.activityName),
           esc(activity?.description),
           esc(e.projectName),
-          esc(e.allocatedHours), // Seguro
+          esc(e.allocatedHours), 
           e.startDate, 
           e.endDate, 
           e.status, 
@@ -85,12 +95,12 @@ const Reports: React.FC = () => {
           esc(e.deliverable2),
           esc(e.requiredFormats ? e.requiredFormats.join('; ') : ''),
           e.review1Date || '',
-          esc(e.progress1 || 0), // Seguro
+          esc(e.progress1 || 0),
           esc(e.observation1),
           e.review2Date || '',
-          esc(e.progress2 || 0), // Seguro
+          esc(e.progress2 || 0),
           esc(e.observation2),
-          esc(e.totalProgress), // Seguro
+          esc(e.totalProgress),
           esc(e.achievementDescription),
           esc(e.evidenceUrl)
         ].join(",");
@@ -113,14 +123,34 @@ const Reports: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-3xl font-bold text-slate-800">
-          {role === 'teacher' ? 'Mi Reporte de Actividades' : 'Reporte Consolidado de Avances'}
+          {role === 'teacher' ? 'Mi Reporte de Actividades' : 'Reporte Consolidado'}
         </h1>
-        <button onClick={handleExport} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm flex items-center">
+        <button onClick={handleExport} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm flex items-center transition-colors">
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-          Exportar Detallado (CSV)
+          Exportar CSV Detallado
         </button>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p className="text-xs font-bold text-slate-500 uppercase">Total Registros</p>
+          <p className="text-2xl font-bold text-slate-800">{totalItems}</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p className="text-xs font-bold text-slate-500 uppercase">Avance Promedio</p>
+          <p className={`text-2xl font-bold ${avgProgress >= 70 ? 'text-green-600' : 'text-blue-600'}`}>{avgProgress}%</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm col-span-2">
+           <p className="text-xs font-bold text-slate-500 uppercase mb-2">Estado de Actividades</p>
+           <div className="flex gap-4 items-center h-full">
+              <div className="flex items-center text-sm"><div className="w-3 h-3 rounded-full bg-slate-300 mr-2"></div> Planif: <strong>{statusCounts.planificado}</strong></div>
+              <div className="flex items-center text-sm"><div className="w-3 h-3 rounded-full bg-yellow-400 mr-2"></div> En Prog: <strong>{statusCounts.enProgreso}</strong></div>
+              <div className="flex items-center text-sm"><div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div> Compl: <strong>{statusCounts.completado}</strong></div>
+           </div>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
@@ -155,9 +185,11 @@ const Reports: React.FC = () => {
                 </td>
                 <td className="px-4 py-3 text-center text-sm text-slate-600">
                     <span className={(row.progress1 || 0) > 0 ? "font-bold text-slate-800" : "text-slate-400"}>{row.progress1 || 0}%</span>
+                    {row.observation1 && <div className="w-2 h-2 bg-blue-400 rounded-full mx-auto mt-1" title="Tiene observación"></div>}
                 </td>
                 <td className="px-4 py-3 text-center text-sm text-slate-600">
                     <span className={(row.progress2 || 0) > 0 ? "font-bold text-slate-800" : "text-slate-400"}>{row.progress2 || 0}%</span>
+                    {row.observation2 && <div className="w-2 h-2 bg-blue-400 rounded-full mx-auto mt-1" title="Tiene observación"></div>}
                 </td>
                 <td className="px-4 py-3 text-center">
                     <span className={`font-bold ${row.totalProgress === 100 ? 'text-green-600' : 'text-blue-600'}`}>
@@ -175,7 +207,7 @@ const Reports: React.FC = () => {
                  <td className="px-4 py-3 text-center">
                    <button 
                     onClick={() => setSelectedItem(row)}
-                    className="text-blue-600 hover:bg-blue-50 p-2 rounded-full transition-colors"
+                    className="text-blue-600 hover:bg-blue-100 p-2 rounded-full transition-colors"
                     title="Ver Detalle Completo"
                    >
                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
