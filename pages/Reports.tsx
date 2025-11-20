@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { AssignmentReportRow } from '../types';
@@ -6,6 +6,7 @@ import { AssignmentReportRow } from '../types';
 const Reports: React.FC = () => {
   const { assignments, teachers, activities, projects } = useData();
   const { role, currentUser } = useAuth();
+  const [selectedItem, setSelectedItem] = useState<AssignmentReportRow | null>(null);
 
   // Filter assignments based on role
   const filteredAssignments = (role === 'teacher' && currentUser)
@@ -26,44 +27,85 @@ const Reports: React.FC = () => {
 
   const handleExport = () => {
     const headers = [
-      'ID', 'Área', 'Persona', 'Actividad', 'Proyecto', 'Horas', 
-      'Inicio', 'Fin', 'Estado', 'Meta', 
-      'Fecha Rev 1', 'Avance 1 (%)', 'Observación 1',
-      'Fecha Rev 2', 'Avance 2 (%)', 'Observación 2',
-      'Total (%)',
-      'Logro', 'Evidencia URL'
+      'ID Asignación', 
+      'Área', 
+      'Nombre Docente', 
+      'Email Docente',
+      'Vinculación',
+      'Actividad', 
+      'Descripción Actividad',
+      'Código Proyecto', 
+      'Horas Asignadas', 
+      'Fecha Inicio', 
+      'Fecha Fin', 
+      'Estado', 
+      'Meta Definida', 
+      'Entregable 1',
+      'Entregable 2',
+      'Formatos Requeridos',
+      'Fecha Rev 1', 
+      'Avance Momento 1 (%)', 
+      'Observación Líder M1',
+      'Fecha Rev 2', 
+      'Avance Momento 2 (%)', 
+      'Observación Líder M2',
+      'Total Acumulado (%)',
+      'Descripción del Logro (Docente)', 
+      'URL Evidencia'
     ];
     
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + headers.join(",") + "\n"
-      + reportData.map(e => {
+    // CORRECCIÓN: Helper seguro que maneja strings, números y nulos
+    const esc = (value: any) => {
+        if (value === null || value === undefined) return '""';
+        // Forzamos la conversión a String antes de hacer replace para evitar errores con números
+        return `"${String(value).replace(/"/g, '""').replace(/\n/g, ' ')}"`;
+    };
+
+    const csvRows = [
+      headers.join(","),
+      ...reportData.map(e => {
+        const teacher = teachers.find(t => t.id === e.teacherId);
+        const activity = activities.find(a => a.id === e.activityCatalogId);
+
         return [
           e.id, 
-          `"${e.area}"`, 
-          `"${e.teacherName}"`, 
-          `"${e.activityName}"`, 
-          e.projectName, 
-          e.allocatedHours, 
+          esc(e.area), 
+          esc(e.teacherName), 
+          esc(teacher?.email),
+          esc(teacher?.contractType),
+          esc(e.activityName),
+          esc(activity?.description),
+          esc(e.projectName),
+          esc(e.allocatedHours), // Seguro
           e.startDate, 
           e.endDate, 
           e.status, 
-          `"${e.goal}"`,
+          esc(e.goal),
+          esc(e.deliverable1),
+          esc(e.deliverable2),
+          esc(e.requiredFormats ? e.requiredFormats.join('; ') : ''),
           e.review1Date || '',
-          e.progress1 || 0,
-          `"${(e.observation1 || '').replace(/"/g, '""')}"`,
+          esc(e.progress1 || 0), // Seguro
+          esc(e.observation1),
           e.review2Date || '',
-          e.progress2 || 0,
-          `"${(e.observation2 || '').replace(/"/g, '""')}"`,
-          e.totalProgress,
-          `"${(e.achievementDescription || '').replace(/"/g, '""')}"`,
-          `"${e.evidenceUrl || ''}"`
+          esc(e.progress2 || 0), // Seguro
+          esc(e.observation2),
+          esc(e.totalProgress), // Seguro
+          esc(e.achievementDescription),
+          esc(e.evidenceUrl)
         ].join(",");
-      }).join("\n");
-      
-    const encodedUri = encodeURI(csvContent);
+      })
+    ];
+
+    const csvContent = csvRows.join("\n");
+    
+    // Usar Blob y BOM (\uFEFF) para asegurar compatibilidad UTF-8 con Excel
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", role === 'teacher' ? "mi_reporte_actividades.csv" : "reporte_consolidado_ctei.csv");
+    link.setAttribute("href", url);
+    link.setAttribute("download", role === 'teacher' ? `reporte_actividades_${currentUser?.name.replace(/\s+/g, '_')}.csv` : "reporte_detallado_completo_ctei.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -77,7 +119,7 @@ const Reports: React.FC = () => {
         </h1>
         <button onClick={handleExport} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm flex items-center">
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-          Exportar CSV
+          Exportar Detallado (CSV)
         </button>
       </div>
 
@@ -85,34 +127,37 @@ const Reports: React.FC = () => {
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-100">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Área</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Persona</th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Área/Docente</th>
               <th className="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Actividad</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-slate-600 uppercase tracking-wider">M1 (%)</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-slate-600 uppercase tracking-wider">M2 (%)</th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Fechas</th>
+              <th className="px-4 py-3 text-center text-xs font-bold text-slate-600 uppercase tracking-wider">M1</th>
+              <th className="px-4 py-3 text-center text-xs font-bold text-slate-600 uppercase tracking-wider">M2</th>
               <th className="px-4 py-3 text-center text-xs font-bold text-slate-600 uppercase tracking-wider">Total</th>
               <th className="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Estado</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Logros & Evidencia</th>
+              <th className="px-4 py-3 text-center text-xs font-bold text-slate-600 uppercase tracking-wider">Detalle</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
             {reportData.map((row) => (
               <tr key={row.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 text-xs font-semibold text-slate-700 whitespace-nowrap">{row.area}</td>
-                <td className="px-4 py-3 text-sm font-medium text-slate-900 whitespace-nowrap">{row.teacherName}</td>
+                <td className="px-4 py-3 text-sm text-slate-700">
+                    <div className="font-bold text-xs uppercase text-slate-500">{row.area}</div>
+                    <div className="font-medium text-slate-900">{row.teacherName}</div>
+                </td>
                 <td className="px-4 py-3 text-sm text-slate-600 min-w-[200px]">
-                    {row.activityName}
-                    <div className="text-xs text-slate-400 mt-1">{row.projectName}</div>
+                    <div className="font-medium text-slate-800">{row.activityName}</div>
+                    {row.projectName !== 'N/A' && <div className="text-xs text-blue-600 mt-0.5">Proy: {row.projectName}</div>}
+                </td>
+                <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">
+                    <div>Del: {row.startDate}</div>
+                    <div>Al: {row.endDate}</div>
+                    <div className="font-bold text-slate-500 mt-1">{row.allocatedHours} Horas</div>
                 </td>
                 <td className="px-4 py-3 text-center text-sm text-slate-600">
-                    {row.progress1 || 0}%
-                    {row.review1Date && <div className="text-[10px] text-slate-400">{row.review1Date}</div>}
-                    {row.observation1 && <div className="text-[10px] text-blue-500 italic truncate max-w-[100px]" title={row.observation1}>Obs: {row.observation1}</div>}
+                    <span className={(row.progress1 || 0) > 0 ? "font-bold text-slate-800" : "text-slate-400"}>{row.progress1 || 0}%</span>
                 </td>
                 <td className="px-4 py-3 text-center text-sm text-slate-600">
-                    {row.progress2 || 0}%
-                    {row.review2Date && <div className="text-[10px] text-slate-400">{row.review2Date}</div>}
-                    {row.observation2 && <div className="text-[10px] text-blue-500 italic truncate max-w-[100px]" title={row.observation2}>Obs: {row.observation2}</div>}
+                    <span className={(row.progress2 || 0) > 0 ? "font-bold text-slate-800" : "text-slate-400"}>{row.progress2 || 0}%</span>
                 </td>
                 <td className="px-4 py-3 text-center">
                     <span className={`font-bold ${row.totalProgress === 100 ? 'text-green-600' : 'text-blue-600'}`}>
@@ -127,25 +172,129 @@ const Reports: React.FC = () => {
                       {row.status}
                     </span>
                   </td>
-                 <td className="px-4 py-3 text-xs text-slate-600 min-w-[200px]">
-                   {row.achievementDescription ? (
-                       <p className="mb-2 italic text-slate-500 line-clamp-2" title={row.achievementDescription}>"{row.achievementDescription}"</p>
-                   ) : <p className="mb-2 text-slate-300">Sin descripción</p>}
-                   
-                   {row.evidenceUrl ? (
-                     <a href={row.evidenceUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center">
-                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                        Ver Evidencia
-                     </a>
-                   ) : (
-                     <span className="text-slate-400">Sin enlace</span>
-                   )}
+                 <td className="px-4 py-3 text-center">
+                   <button 
+                    onClick={() => setSelectedItem(row)}
+                    className="text-blue-600 hover:bg-blue-50 p-2 rounded-full transition-colors"
+                    title="Ver Detalle Completo"
+                   >
+                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                   </button>
                  </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Modal de Detalle Completo */}
+      {selectedItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full p-6 m-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-6 border-b pb-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800">{selectedItem.activityName}</h2>
+                <p className="text-slate-500 text-sm">{selectedItem.teacherName} | {selectedItem.area}</p>
+              </div>
+              <button onClick={() => setSelectedItem(null)} className="text-slate-400 hover:text-slate-600">
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Panel Izquierdo: Definición */}
+                <div className="space-y-4">
+                    <h3 className="font-bold text-blue-800 border-b border-blue-100 pb-2">1. Detalles de Asignación</h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span className="block font-bold text-slate-600 text-xs uppercase">Proyecto</span>
+                            <span className="text-slate-800">{selectedItem.projectName}</span>
+                        </div>
+                        <div>
+                            <span className="block font-bold text-slate-600 text-xs uppercase">Horas Asignadas</span>
+                            <span className="text-slate-800">{selectedItem.allocatedHours} h</span>
+                        </div>
+                        <div>
+                            <span className="block font-bold text-slate-600 text-xs uppercase">Inicio</span>
+                            <span className="text-slate-800">{selectedItem.startDate}</span>
+                        </div>
+                        <div>
+                            <span className="block font-bold text-slate-600 text-xs uppercase">Fin</span>
+                            <span className="text-slate-800">{selectedItem.endDate}</span>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-slate-50 p-3 rounded text-sm border border-slate-100">
+                        <span className="block font-bold text-slate-600 text-xs uppercase mb-1">Meta</span>
+                        <p className="text-slate-800 italic">{selectedItem.goal || 'No definida'}</p>
+                    </div>
+
+                    <div className="space-y-2 text-sm">
+                        <div>
+                            <span className="block font-bold text-slate-600 text-xs uppercase">Entregable 1</span>
+                            <p className="text-slate-700">{selectedItem.deliverable1 || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <span className="block font-bold text-slate-600 text-xs uppercase">Entregable 2</span>
+                            <p className="text-slate-700">{selectedItem.deliverable2 || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <span className="block font-bold text-slate-600 text-xs uppercase">Formatos</span>
+                            <p className="text-slate-700">{selectedItem.requiredFormats ? selectedItem.requiredFormats.join(', ') : 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Panel Derecho: Evaluación y Ejecución */}
+                <div className="space-y-4">
+                    <h3 className="font-bold text-green-800 border-b border-green-100 pb-2">2. Ejecución y Evaluación</h3>
+                    
+                    <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+                         <span className="block font-bold text-slate-600 text-xs uppercase mb-2">Logro del Docente</span>
+                         <p className="text-sm text-slate-700 bg-slate-50 p-2 rounded mb-3">
+                             {selectedItem.achievementDescription || "Sin reporte del docente."}
+                         </p>
+                         <span className="block font-bold text-slate-600 text-xs uppercase mb-1">Evidencia</span>
+                         {selectedItem.evidenceUrl ? (
+                             <a href={selectedItem.evidenceUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline text-sm flex items-center break-all">
+                                <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                                {selectedItem.evidenceUrl}
+                             </a>
+                         ) : <span className="text-sm text-slate-400">No se adjuntó enlace.</span>}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-blue-50 p-3 rounded border border-blue-100">
+                            <div className="text-xs font-bold text-blue-800 uppercase mb-2 text-center">Momento 1</div>
+                            <div className="text-center text-2xl font-bold text-blue-600 mb-1">{selectedItem.progress1 || 0}%</div>
+                            <div className="text-xs text-center text-slate-500 mb-2">{selectedItem.review1Date || 'Sin fecha'}</div>
+                            {selectedItem.observation1 && (
+                                <p className="text-xs text-slate-700 italic border-t border-blue-200 pt-2 mt-1">"{selectedItem.observation1}"</p>
+                            )}
+                        </div>
+                        <div className="bg-blue-50 p-3 rounded border border-blue-100">
+                            <div className="text-xs font-bold text-blue-800 uppercase mb-2 text-center">Momento 2</div>
+                            <div className="text-center text-2xl font-bold text-blue-600 mb-1">{selectedItem.progress2 || 0}%</div>
+                            <div className="text-xs text-center text-slate-500 mb-2">{selectedItem.review2Date || 'Sin fecha'}</div>
+                             {selectedItem.observation2 && (
+                                <p className="text-xs text-slate-700 italic border-t border-blue-200 pt-2 mt-1">"{selectedItem.observation2}"</p>
+                            )}
+                        </div>
+                    </div>
+                    
+                    <div className="bg-green-50 p-3 rounded border border-green-100 flex justify-between items-center">
+                         <span className="font-bold text-green-900">Total Acumulado</span>
+                         <span className="font-bold text-2xl text-green-700">{selectedItem.totalProgress}%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+                 <button onClick={() => setSelectedItem(null)} className="bg-slate-800 text-white px-6 py-2 rounded hover:bg-slate-700">Cerrar Detalle</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
