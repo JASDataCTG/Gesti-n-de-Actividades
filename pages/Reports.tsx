@@ -1,17 +1,34 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
-import { AssignmentReportRow } from '../types';
+import { AssignmentReportRow, ActivityArea } from '../types';
 
 const Reports: React.FC = () => {
   const { assignments, teachers, activities, projects } = useData();
   const { role, currentUser } = useAuth();
   const [selectedItem, setSelectedItem] = useState<AssignmentReportRow | null>(null);
+  const [selectedAreaFilter, setSelectedAreaFilter] = useState<string>('Todas');
 
-  // Filter assignments based on role
-  const filteredAssignments = (role === 'teacher' && currentUser)
+  const AREAS: ActivityArea[] = [
+    'Desarrollo Académico',
+    'Investigación',
+    'Egresados',
+    'Proyección Social',
+    'Visibilidad Nacional e Internacional',
+    'Vida Universitaria'
+  ];
+
+  // 1. First Filter: Based on Role
+  const roleFilteredAssignments = (role === 'teacher' && currentUser)
     ? assignments.filter(a => a.teacherId === currentUser.id)
     : assignments;
+
+  // 2. Second Filter: Based on Area Selection
+  const filteredAssignments = roleFilteredAssignments.filter(a => {
+      if (selectedAreaFilter === 'Todas') return true;
+      const activity = activities.find(ac => ac.id === a.activityCatalogId);
+      return activity?.area === selectedAreaFilter;
+  });
 
   const reportData: AssignmentReportRow[] = filteredAssignments.map(a => {
     const activity = activities.find(ac => ac.id === a.activityCatalogId);
@@ -127,10 +144,24 @@ const Reports: React.FC = () => {
         <h1 className="text-3xl font-bold text-slate-800">
           {role === 'teacher' ? 'Mi Reporte de Actividades' : 'Reporte Consolidado'}
         </h1>
-        <button onClick={handleExport} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm flex items-center transition-colors">
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-          Exportar CSV Detallado
-        </button>
+        
+        <div className="flex gap-3 w-full md:w-auto">
+            <select 
+                className="border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                value={selectedAreaFilter}
+                onChange={(e) => setSelectedAreaFilter(e.target.value)}
+            >
+                <option value="Todas">Todas las Áreas</option>
+                {AREAS.map(area => (
+                    <option key={area} value={area}>{area}</option>
+                ))}
+            </select>
+            
+            <button onClick={handleExport} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm flex items-center transition-colors whitespace-nowrap">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            Exportar CSV
+            </button>
+        </div>
       </div>
 
       {/* Summary Stats */}
@@ -215,6 +246,13 @@ const Reports: React.FC = () => {
                  </td>
               </tr>
             ))}
+            {reportData.length === 0 && (
+                <tr>
+                    <td colSpan={8} className="px-6 py-10 text-center text-slate-500">
+                        No hay registros para el filtro seleccionado.
+                    </td>
+                </tr>
+            )}
           </tbody>
         </table>
       </div>

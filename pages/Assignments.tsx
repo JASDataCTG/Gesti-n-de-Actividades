@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
-import { Assignment } from '../types';
+import { Assignment, ActivityArea } from '../types';
 
 const Assignments: React.FC = () => {
   const { assignments, activities, teachers, projects, addAssignment, updateAssignment, deleteAssignment, getAssignmentsByActivity } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [hoursError, setHoursError] = useState<string | null>(null);
+  const [selectedAreaFilter, setSelectedAreaFilter] = useState<string>('Todas');
+
+  const AREAS: ActivityArea[] = [
+    'Desarrollo Académico',
+    'Investigación',
+    'Egresados',
+    'Proyección Social',
+    'Visibilidad Nacional e Internacional',
+    'Vida Universitaria'
+  ];
 
   // Form State
   const initialFormState = {
@@ -130,21 +140,42 @@ const Assignments: React.FC = () => {
 
   const totalProgress = (formData.progress1 || 0) + (formData.progress2 || 0);
 
+  // FILTER LOGIC
+  const filteredAssignments = assignments.filter(assign => {
+      if (selectedAreaFilter === 'Todas') return true;
+      const activity = activities.find(a => a.id === assign.activityCatalogId);
+      return activity?.area === selectedAreaFilter;
+  });
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-slate-800">Asignación y Evaluación (Líder)</h1>
-        <button onClick={handleOpenCreate} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm flex items-center">
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-          Nueva Asignación
-        </button>
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <h1 className="text-3xl font-bold text-slate-800">Asignación y Evaluación</h1>
+        
+        <div className="flex gap-3 w-full md:w-auto">
+            <select 
+                className="border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                value={selectedAreaFilter}
+                onChange={(e) => setSelectedAreaFilter(e.target.value)}
+            >
+                <option value="Todas">Todas las Áreas</option>
+                {AREAS.map(area => (
+                    <option key={area} value={area}>{area}</option>
+                ))}
+            </select>
+
+            <button onClick={handleOpenCreate} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm flex items-center whitespace-nowrap">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+            Nueva Asignación
+            </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Docente</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Docente/Área</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Actividad</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-slate-500 uppercase">Avance</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Estado</th>
@@ -152,14 +183,17 @@ const Assignments: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
-            {assignments.map(assign => {
+            {filteredAssignments.map(assign => {
               const t = teachers.find(x => x.id === assign.teacherId);
               const a = activities.find(x => x.id === assign.activityCatalogId);
               const currentTotal = (assign.progress1 || 0) + (assign.progress2 || 0);
               
               return (
                 <tr key={assign.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-4 text-sm font-medium text-slate-900">{t?.name}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-slate-900">
+                    <div>{t?.name}</div>
+                    <div className="text-xs font-normal text-slate-500">{a?.area}</div>
+                  </td>
                   <td className="px-6 py-4 text-sm text-slate-600 max-w-xs truncate" title={a?.name}>{a?.name}</td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex flex-col items-center">
@@ -187,6 +221,13 @@ const Assignments: React.FC = () => {
                 </tr>
               );
             })}
+            {filteredAssignments.length === 0 && (
+                <tr>
+                    <td colSpan={5} className="px-6 py-10 text-center text-slate-500">
+                        No hay asignaciones para el área seleccionada.
+                    </td>
+                </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -218,7 +259,7 @@ const Assignments: React.FC = () => {
                       }}
                     >
                       <option value="">Seleccionar...</option>
-                      {activities.map(a => <option key={a.id} value={a.id}>{a.name} (Max {a.maxHours}h)</option>)}
+                      {activities.map(a => <option key={a.id} value={a.id}>{a.name} ({a.area})</option>)}
                     </select>
                   </div>
 

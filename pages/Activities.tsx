@@ -6,6 +6,7 @@ const Activities: React.FC = () => {
   const { activities, addActivity, updateActivity, deleteActivity } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ActivityCatalogItem | null>(null);
+  const [selectedAreaFilter, setSelectedAreaFilter] = useState<string>('Todas');
 
   // Form State
   const [formData, setFormData] = useState<Omit<ActivityCatalogItem, 'id'>>({
@@ -30,6 +31,8 @@ const Activities: React.FC = () => {
       case 'Desarrollo Académico': return 'bg-blue-100 text-blue-800';
       case 'Proyección Social': return 'bg-green-100 text-green-800';
       case 'Vida Universitaria': return 'bg-yellow-100 text-yellow-800';
+      case 'Egresados': return 'bg-orange-100 text-orange-800';
+      case 'Visibilidad Nacional e Internacional': return 'bg-indigo-100 text-indigo-800';
       default: return 'bg-slate-100 text-slate-800';
     }
   };
@@ -70,17 +73,35 @@ const Activities: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  const filteredActivities = selectedAreaFilter === 'Todas'
+    ? activities
+    : activities.filter(a => a.area === selectedAreaFilter);
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <h1 className="text-3xl font-bold text-slate-800">Catálogo de Actividades</h1>
-        <button 
-          onClick={handleOpenCreate}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center"
-        >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-          Nueva Actividad
-        </button>
+        
+        <div className="flex gap-3 w-full md:w-auto">
+            <select 
+                className="border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                value={selectedAreaFilter}
+                onChange={(e) => setSelectedAreaFilter(e.target.value)}
+            >
+                <option value="Todas">Todas las Áreas</option>
+                {AREAS.map(area => (
+                    <option key={area} value={area}>{area}</option>
+                ))}
+            </select>
+
+            <button 
+            onClick={handleOpenCreate}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center whitespace-nowrap"
+            >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            Nueva Actividad
+            </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -95,7 +116,7 @@ const Activities: React.FC = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-slate-200">
-            {activities.map((act) => (
+            {filteredActivities.map((act) => (
               <tr key={act.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 py-1 rounded-full text-xs font-bold ${getAreaColor(act.area)}`}>
@@ -115,6 +136,13 @@ const Activities: React.FC = () => {
                 </td>
               </tr>
             ))}
+            {filteredActivities.length === 0 && (
+                <tr>
+                    <td colSpan={5} className="px-6 py-10 text-center text-slate-500">
+                        No se encontraron actividades en esta área.
+                    </td>
+                </tr>
+            )}
           </tbody>
         </table>
       </div>
