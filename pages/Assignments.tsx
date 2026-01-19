@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import { Assignment, ActivityArea } from '../types';
 
@@ -9,6 +9,9 @@ const Assignments: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [hoursError, setHoursError] = useState<string | null>(null);
   const [selectedAreaFilter, setSelectedAreaFilter] = useState<string>('Todas');
+  
+  // New state for filtering inside the modal form
+  const [formAreaFilter, setFormAreaFilter] = useState<string>('');
 
   const AREAS: ActivityArea[] = [
     'Desarrollo Académico',
@@ -63,7 +66,6 @@ const Assignments: React.FC = () => {
         requiredFormats: prev.requiredFormats ? prev.requiredFormats.join(', ') : '',
         startDate: prev.startDate || '',
         endDate: prev.endDate || '',
-        // Note: we don't copy teacher, project or hours as these are usually unique to the assignment
       }));
     }
   };
@@ -90,12 +92,16 @@ const Assignments: React.FC = () => {
   const handleOpenCreate = () => {
     setEditingId(null);
     setFormData(initialFormState);
+    setFormAreaFilter(''); // Reset form filter
     setHoursError(null);
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (a: Assignment) => {
     setEditingId(a.id);
+    const activity = activities.find(act => act.id === a.activityCatalogId);
+    setFormAreaFilter(activity?.area || ''); // Set form filter to current activity area
+    
     setFormData({
       activityCatalogId: a.activityCatalogId,
       teacherId: a.teacherId,
@@ -166,7 +172,12 @@ const Assignments: React.FC = () => {
   const totalProgress = (formData.progress1 || 0) + (formData.progress2 || 0);
   const hasPreviousData = formData.activityCatalogId && getPreviousAssignmentForActivity(formData.activityCatalogId);
 
-  // FILTER LOGIC
+  // Activities available for selection in the form based on area filter
+  const availableActivitiesForForm = formAreaFilter 
+    ? activities.filter(a => a.area === formAreaFilter)
+    : activities;
+
+  // List filter logic
   const filteredAssignments = assignments.filter(assign => {
       if (selectedAreaFilter === 'Todas') return true;
       const activity = activities.find(a => a.id === assign.activityCatalogId);
@@ -275,6 +286,21 @@ const Assignments: React.FC = () => {
                 <div className="space-y-4 lg:col-span-1 border-r border-slate-100 pr-4">
                   <h3 className="font-semibold text-slate-800 border-b pb-2 text-blue-600">1. Definición</h3>
                   
+                  {/* Internal Filter by Area */}
+                  <div>
+                    <label className="block text-xs font-bold text-blue-500 mb-1">Filtrar Actividades por Área</label>
+                    <select className="w-full border border-blue-200 bg-blue-50 text-slate-900 rounded text-sm p-2 outline-none focus:ring-1 focus:ring-blue-500"
+                      value={formAreaFilter}
+                      onChange={e => {
+                        setFormAreaFilter(e.target.value);
+                        setFormData({...formData, activityCatalogId: ''}); // Clear selected activity when area changes
+                      }}
+                    >
+                      <option value="">Todas las Áreas</option>
+                      {AREAS.map(area => <option key={area} value={area}>{area}</option>)}
+                    </select>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">Actividad</label>
                     <select required className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2"
@@ -284,9 +310,14 @@ const Assignments: React.FC = () => {
                         checkHoursAvailability(e.target.value, editingId, formData.allocatedHours);
                       }}
                     >
-                      <option value="">Seleccionar...</option>
-                      {activities.map(a => <option key={a.id} value={a.id}>{a.name} ({a.area})</option>)}
+                      <option value="">Seleccionar actividad...</option>
+                      {availableActivitiesForForm.map(a => (
+                        <option key={a.id} value={a.id}>{a.name} {!formAreaFilter && `(${a.area})`}</option>
+                      ))}
                     </select>
+                    {availableActivitiesForForm.length === 0 && formAreaFilter && (
+                      <p className="text-[10px] text-red-500 mt-1">No hay actividades registradas en esta área.</p>
+                    )}
                   </div>
 
                   <div>
@@ -295,7 +326,7 @@ const Assignments: React.FC = () => {
                       value={formData.teacherId}
                       onChange={e => setFormData({...formData, teacherId: e.target.value})}
                     >
-                      <option value="">Seleccionar...</option>
+                      <option value="">Seleccionar responsable...</option>
                       {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                     </select>
                   </div>
@@ -397,7 +428,7 @@ const Assignments: React.FC = () => {
                       </span>
                    </h3>
                    
-                   {/* Evidence (Read Only mostly for leader, but editable here just in case) */}
+                   {/* Evidence Section */}
                    <div className="bg-white p-3 rounded border border-slate-200 shadow-sm mb-4">
                       <div className="flex justify-between mb-2">
                         <label className="block text-xs font-bold text-slate-700">Evidencia (Link Drive)</label>

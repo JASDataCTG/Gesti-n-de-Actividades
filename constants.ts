@@ -18,6 +18,7 @@ export const INITIAL_TEACHERS: Teacher[] = [
 ];
 
 export const INITIAL_ACTIVITIES: ActivityCatalogItem[] = [
+  // --- INVESTIGACIÓN (Existentes) ---
   { id: 'A-001', name: 'Orientación de SIEF – PAT Colectivo', description: 'Direccionamiento estratégico de semilleros.', maxHours: 40, area: 'Investigación' },
   { id: 'A-002', name: 'Generación de producto como valor agregado de PAT Colectivo', description: 'Producción académica derivada.', maxHours: 80, area: 'Investigación' },
   { id: 'A-003', name: 'Organización y desarrollo de Club de Revista', description: 'Espacios de formación para la investigación.', maxHours: 20, area: 'Investigación' },
@@ -28,13 +29,21 @@ export const INITIAL_ACTIVITIES: ActivityCatalogItem[] = [
   { id: 'A-008', name: 'Trabajo de Grado pregrado (Director y/o Asesor)', description: 'Dirección de tesis de pregrado.', maxHours: 48, area: 'Investigación' },
   { id: 'A-009', name: 'Formulación y presentación de Proyecto CTeI', description: 'Aprobación de ejecución institucional.', maxHours: 100, area: 'Investigación' },
   { id: 'A-010', name: 'Ejecución como Investigador Principal', description: 'Proyecto con recurso propio or externo.', maxHours: 120, area: 'Investigación' },
-  { id: 'A-011', name: 'Participación como Co-investigador', description: 'Apoyo en proyecto CTeI.', maxHours: 60, area: 'Investigación' },
-  { id: 'A-012', name: 'Estancia investigativa', description: 'Movilidad académica.', maxHours: 160, area: 'Investigación' },
-  { id: 'A-013', name: 'Escritura de Artículo Original o de Revisión', description: 'Generación de nuevo conocimiento.', maxHours: 80, area: 'Investigación' },
-  { id: 'A-014', name: 'Escritura de capítulo de libro', description: 'Resultado de investigación.', maxHours: 60, area: 'Investigación' },
-  { id: 'A-015', name: 'Dirección de Trabajos de Maestría o Doctorado', description: 'Posgrado.', maxHours: 90, area: 'Investigación' },
-  { id: 'A-016', name: 'Edición de revista científica', description: 'Gestión editorial.', maxHours: 100, area: 'Investigación' },
-  { id: 'A-017', name: 'Registro calificado en Creación/Renovación', description: 'Procesos de acreditación.', maxHours: 50, area: 'Investigación' },
-  { id: 'A-018', name: 'Liderazgo Grupo de Investigación', description: 'Gestión administrativa del grupo.', maxHours: 40, area: 'Investigación' },
-  { id: 'A-019', name: 'Desarrollar PATC orientados a Emprendimiento', description: 'Fomento a la innovación.', maxHours: 40, area: 'Investigación' },
+
+  // --- PROYECCIÓN SOCIAL (Nuevas actividades cargadas desde el adjunto) ---
+  { id: 'PS-001', name: 'Coordinacion y seguimiento de la gestion de extension y proyeccion social', description: 'Labores propias del cargo', maxHours: 120, area: 'Proyección Social' },
+  { id: 'PS-002', name: 'Organización, contruccion documento Registro Calificado', description: 'Históricos de gestión de Proyección Social y Extensión, fichas de condición 6 de RSE y demás anexos.', maxHours: 90, area: 'Proyección Social' },
+  { id: 'PS-003', name: 'Diapositivas- guiones-simulacros Registro calificados', description: 'Elaboracion , Diapositivas institucionales, simulacros, libretos.', maxHours: 30, area: 'Proyección Social' },
+  { id: 'PS-004', name: 'Generacion de productos de valor agregado de PAT Colectivo', description: 'Productos de apropiacion social.', maxHours: 32, area: 'Proyección Social' },
+  { id: 'PS-005', name: 'Proyectos Macroproyectos e Intervencion Social y Ambientales', description: 'Cronogramas, intervenciones. Elaboracion de informe de avances o finales del mismo.', maxHours: 52, area: 'Proyección Social' },
+  { id: 'PS-006', name: 'Participacion en Jornadas de atencion integral', description: 'Implica gestion, participacion entrega de informe de resultados.', maxHours: 12, area: 'Proyección Social' },
+  { id: 'PS-007', name: 'Participacion en Divulgacion de R.S.U - Docente', description: 'Rastreo, organización de documento, escritura de la ficha, poster y participacion.', maxHours: 24, area: 'Proyección Social' },
+  { id: 'PS-008', name: 'Diagnostico y desarrollo de la ruta social', description: 'Implica organización, planeacion ejecucion, analisis, e implementacion de las estrategias.', maxHours: 16, area: 'Proyección Social' },
+  { id: 'PS-009', name: 'Escritura de contenidos de cartillas, boletines, revistas, guias', description: 'Diseño y elaboracion de documentos derivados de proyectos de intervencion social.', maxHours: 48, area: 'Proyección Social' },
+  { id: 'PS-010', name: 'Gestion de alianzas, convenios, mesas de trabajo', description: 'Rastreo, participacion en mesas de trabajo y propuesta de actividad con Aliados.', maxHours: 48, area: 'Proyección Social' },
+  { id: 'PS-011', name: 'Programas de extension y educacion continuas vendidos', description: 'Implica rastreo, diseño, presentacion de propuesta y gestión de ventas al CEPEC.', maxHours: 48, area: 'Proyección Social' },
+  { id: 'PS-012', name: 'Organizacion de congresos-simposios autosostenibles', description: 'Apoyo de docentes con funciones al area en la organización.', maxHours: 16, area: 'Proyección Social' },
+  { id: 'PS-013', name: 'Colaborar con entidades públicas y privadas en mesas de trabajo', description: 'Identificar oportunidades de asesorias y consultorias.', maxHours: 32, area: 'Proyección Social' },
+  { id: 'PS-014', 'name': 'Rastreo, formulacion y presentacion de proyectos en convocatorias', 'description': 'Convocatorias a Nivel Distrital y/o Departamental de corte social ambiental.', 'maxHours': 80, 'area': 'Proyección Social' },
+  { id: 'PS-015', 'name': 'Gestion de la Supervision de la Practica', 'description': 'Supervisor de Practicas. Organizacion, seguimiento, comites y anexos RDS.', 'maxHours': 385, 'area': 'Proyección Social' },
 ];
