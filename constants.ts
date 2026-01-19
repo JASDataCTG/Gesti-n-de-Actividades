@@ -8,10 +8,10 @@ export const INITIAL_PROJECTS: Project[] = [
 ];
 
 export const INITIAL_TEACHERS: Teacher[] = [
-  { id: 'T-001', name: 'Ana María Pérez', email: 'ana.perez@uni.edu.co', contractType: 'Tiempo Completo' },
-  { id: 'T-002', name: 'Carlos Rodríguez', email: 'carlos.r@uni.edu.co', contractType: 'Medio Tiempo' },
-  { id: 'T-003', name: 'Luisa Fernanda Gómez', email: 'luisa.g@uni.edu.co', contractType: 'Catedrático' },
-  { id: 'T-004', name: 'Jorge Torres', email: 'jorge.t@uni.edu.co', contractType: 'Tiempo Completo' },
+  { id: 'T-001', name: 'Ana María Pérez', email: 'ana.perez@uni.edu.co', idNumber: '12345', contractType: 'Tiempo Completo' },
+  { id: 'T-002', name: 'Carlos Rodríguez', email: 'carlos.r@uni.edu.co', idNumber: '54321', contractType: 'Medio Tiempo' },
+  { id: 'T-003', name: 'Luisa Fernanda Gómez', email: 'luisa.g@uni.edu.co', idNumber: '67890', contractType: 'Catedrático' },
+  { id: 'T-004', name: 'Jorge Torres', email: 'jorge.t@uni.edu.co', idNumber: '11111', contractType: 'Tiempo Completo' },
 ];
 
 // Derived from the user's image - All set to Investigación as requested
@@ -25,7 +25,7 @@ export const INITIAL_ACTIVITIES: ActivityCatalogItem[] = [
   { id: 'A-007', name: 'Trabajo de Grado pregrado (Jurado Calificador)', description: 'Evaluación de proyecto e informe final.', maxHours: 10, area: 'Investigación' },
   { id: 'A-008', name: 'Trabajo de Grado pregrado (Director y/o Asesor)', description: 'Dirección de tesis de pregrado.', maxHours: 48, area: 'Investigación' },
   { id: 'A-009', name: 'Formulación y presentación de Proyecto CTeI', description: 'Aprobación de ejecución institucional.', maxHours: 100, area: 'Investigación' },
-  { id: 'A-010', name: 'Ejecución como Investigador Principal', description: 'Proyecto con recurso propio o externo.', maxHours: 120, area: 'Investigación' },
+  { id: 'A-010', name: 'Ejecución como Investigador Principal', description: 'Proyecto con recurso propio or externo.', maxHours: 120, area: 'Investigación' },
   { id: 'A-011', name: 'Participación como Co-investigador', description: 'Apoyo en proyecto CTeI.', maxHours: 60, area: 'Investigación' },
   { id: 'A-012', name: 'Estancia investigativa', description: 'Movilidad académica.', maxHours: 160, area: 'Investigación' },
   { id: 'A-013', name: 'Escritura de Artículo Original o de Revisión', description: 'Generación de nuevo conocimiento.', maxHours: 80, area: 'Investigación' },

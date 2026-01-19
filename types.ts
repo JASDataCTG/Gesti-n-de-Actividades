@@ -3,6 +3,7 @@ export interface Teacher {
   id: string;
   name: string;
   email: string;
+  idNumber: string; // Número de identificación / Password
   contractType: 'Tiempo Completo' | 'Medio Tiempo' | 'Catedrático';
 }
 
