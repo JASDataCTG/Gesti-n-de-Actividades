@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { Assignment, ActivityArea } from '../types';
@@ -42,6 +43,30 @@ const Assignments: React.FC = () => {
   };
 
   const [formData, setFormData] = useState(initialFormState);
+
+  // Helper to check if there are previous assignments for the selected activity to reuse data
+  const getPreviousAssignmentForActivity = (activityId: string) => {
+    const activityAssignments = assignments
+      .filter(a => a.activityCatalogId === activityId)
+      .sort((a, b) => b.id.localeCompare(a.id)); // Get the most recent by ID
+    return activityAssignments.length > 0 ? activityAssignments[0] : null;
+  };
+
+  const handleLoadTemplate = () => {
+    const prev = getPreviousAssignmentForActivity(formData.activityCatalogId);
+    if (prev) {
+      setFormData(prevData => ({
+        ...prevData,
+        goal: prev.goal || '',
+        deliverable1: prev.deliverable1 || '',
+        deliverable2: prev.deliverable2 || '',
+        requiredFormats: prev.requiredFormats ? prev.requiredFormats.join(', ') : '',
+        startDate: prev.startDate || '',
+        endDate: prev.endDate || '',
+        // Note: we don't copy teacher, project or hours as these are usually unique to the assignment
+      }));
+    }
+  };
 
   // Calculate hours availability
   const checkHoursAvailability = (activityId: string, currentAssignId: string | null, newHours: number) => {
@@ -139,6 +164,7 @@ const Assignments: React.FC = () => {
   };
 
   const totalProgress = (formData.progress1 || 0) + (formData.progress2 || 0);
+  const hasPreviousData = formData.activityCatalogId && getPreviousAssignmentForActivity(formData.activityCatalogId);
 
   // FILTER LOGIC
   const filteredAssignments = assignments.filter(assign => {
@@ -314,7 +340,20 @@ const Assignments: React.FC = () => {
 
                 {/* Section 2: Requirements & Deliverables */}
                 <div className="space-y-4 lg:col-span-1 border-r border-slate-100 pr-4">
-                   <h3 className="font-semibold text-slate-800 border-b pb-2 text-blue-600">2. Requerimientos</h3>
+                   <div className="flex justify-between items-center border-b pb-2">
+                      <h3 className="font-semibold text-slate-800 text-blue-600">2. Requerimientos</h3>
+                      {hasPreviousData && (
+                        <button 
+                          type="button" 
+                          onClick={handleLoadTemplate}
+                          className="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded hover:bg-blue-100 border border-blue-200 flex items-center gap-1 transition-colors"
+                          title="Cargar meta y entregables de la última vez que se asignó esta actividad"
+                        >
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.477.859h4z"></path></svg>
+                          Cargar última
+                        </button>
+                      )}
+                   </div>
                     <div>
                       <label className="block text-xs font-medium text-slate-500 mb-1">Meta</label>
                       <textarea className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2" rows={2}
