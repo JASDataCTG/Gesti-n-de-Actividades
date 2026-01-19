@@ -1,6 +1,9 @@
 
 import { ActivityCatalogItem, Teacher, Project } from './types';
 
+// Credencial maestra para el administrador
+export const ADMIN_PASSWORD = 'admin2024';
+
 export const INITIAL_PROJECTS: Project[] = [
   { id: 'P-001', name: 'Fortalecimiento de Competencias CTeI', code: 'INV-2024-01' },
   { id: 'P-002', name: 'Innovación Pedagógica en Aula', code: 'EDU-2024-05' },
@@ -14,7 +17,6 @@ export const INITIAL_TEACHERS: Teacher[] = [
   { id: 'T-004', name: 'Jorge Torres', email: 'jorge.t@uni.edu.co', idNumber: '11111', contractType: 'Tiempo Completo' },
 ];
 
-// Derived from the user's image - All set to Investigación as requested
 export const INITIAL_ACTIVITIES: ActivityCatalogItem[] = [
   { id: 'A-001', name: 'Orientación de SIEF – PAT Colectivo', description: 'Direccionamiento estratégico de semilleros.', maxHours: 40, area: 'Investigación' },
   { id: 'A-002', name: 'Generación de producto como valor agregado de PAT Colectivo', description: 'Producción académica derivada.', maxHours: 80, area: 'Investigación' },
