@@ -28,14 +28,13 @@ const Sidebar: React.FC = () => {
   return (
     <div className="w-64 bg-uninunez-onix min-h-screen flex flex-col fixed left-0 top-0 shadow-2xl z-20 border-r border-slate-700">
       <div className="h-24 flex flex-col items-center justify-center bg-white p-4">
-        <div className="flex items-center gap-2">
-            <div className="bg-uninunez-orange w-10 h-10 rounded-lg flex items-center justify-center text-white font-black text-xl italic shadow-md">
-                UN
-            </div>
-            <div className="flex flex-col">
-                <span className="text-uninunez-onix font-extrabold text-sm tracking-tighter leading-none">INÚÑEZ</span>
-                <span className="text-[8px] text-uninunez-ceniza font-medium uppercase tracking-widest mt-0.5">Gestor Académico</span>
-            </div>
+        <div className="flex flex-col items-center">
+            <img 
+              src="https://axis.uninunez.edu.co/images/uninunez/vm/logoqteal.svg" 
+              alt="Logo Uninúñez" 
+              className="h-12 w-auto mb-1"
+            />
+            <span className="text-[8px] text-uninunez-ceniza font-black uppercase tracking-widest leading-none">Gestor Académico CTeI</span>
         </div>
       </div>
       

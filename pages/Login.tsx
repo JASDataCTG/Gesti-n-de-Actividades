@@ -42,16 +42,13 @@ const Login: React.FC = () => {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-uninunez-orange opacity-5 rounded-full blur-3xl"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-uninunez-turquoise opacity-5 rounded-full blur-3xl"></div>
 
-      <div className="mb-10 text-center z-10">
-        <div className="flex items-center justify-center gap-3 mb-4 scale-125">
-             <div className="bg-uninunez-orange w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-2xl italic shadow-xl">
-                UN
-            </div>
-            <div className="text-left">
-                <h1 className="text-uninunez-onix font-black text-2xl tracking-tighter leading-none">INÚÑEZ</h1>
-                <p className="text-[10px] text-uninunez-ceniza font-bold uppercase tracking-widest mt-0.5">Gestor Académico CTeI</p>
-            </div>
-        </div>
+      <div className="mb-10 text-center z-10 flex flex-col items-center">
+        <img 
+          src="https://axis.uninunez.edu.co/images/uninunez/vm/logoqteal.svg" 
+          alt="Corporación Universitaria Rafael Núñez" 
+          className="h-24 w-auto mb-2 drop-shadow-lg"
+        />
+        <p className="text-[12px] text-uninunez-ceniza font-black uppercase tracking-[0.3em] mt-2">Gestor Académico CTeI</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl z-10">
