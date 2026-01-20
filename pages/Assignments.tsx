@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import { Assignment, ActivityArea } from '../types';
@@ -9,8 +8,6 @@ const Assignments: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [hoursError, setHoursError] = useState<string | null>(null);
   const [selectedAreaFilter, setSelectedAreaFilter] = useState<string>('Todas');
-  
-  // New state for filtering inside the modal form
   const [formAreaFilter, setFormAreaFilter] = useState<string>('');
 
   const AREAS: ActivityArea[] = [
@@ -22,7 +19,6 @@ const Assignments: React.FC = () => {
     'Vida Universitaria'
   ];
 
-  // Form State
   const initialFormState = {
     activityCatalogId: '',
     teacherId: '',
@@ -47,11 +43,10 @@ const Assignments: React.FC = () => {
 
   const [formData, setFormData] = useState(initialFormState);
 
-  // Helper to check if there are previous assignments for the selected activity to reuse data
   const getPreviousAssignmentForActivity = (activityId: string) => {
     const activityAssignments = assignments
       .filter(a => a.activityCatalogId === activityId)
-      .sort((a, b) => b.id.localeCompare(a.id)); // Get the most recent by ID
+      .sort((a, b) => b.id.localeCompare(a.id));
     return activityAssignments.length > 0 ? activityAssignments[0] : null;
   };
 
@@ -70,19 +65,16 @@ const Assignments: React.FC = () => {
     }
   };
 
-  // Calculate hours availability
   const checkHoursAvailability = (activityId: string, currentAssignId: string | null, newHours: number) => {
     const activity = activities.find(a => a.id === activityId);
     if (!activity) return true;
-
     const existingAssignments = getAssignmentsByActivity(activityId);
     const otherAssignmentsHours = existingAssignments
       .filter(a => a.id !== currentAssignId)
       .reduce((sum, a) => sum + a.allocatedHours, 0);
-
     const total = otherAssignmentsHours + newHours;
     if (total > activity.maxHours) {
-      setHoursError(`Excede el máximo permitido (${activity.maxHours}h). Asignado actual: ${otherAssignmentsHours}h`);
+      setHoursError(`Excede máximo permitido (${activity.maxHours}h). Asignado: ${otherAssignmentsHours}h`);
       return false;
     }
     setHoursError(null);
@@ -92,7 +84,7 @@ const Assignments: React.FC = () => {
   const handleOpenCreate = () => {
     setEditingId(null);
     setFormData(initialFormState);
-    setFormAreaFilter(''); // Reset form filter
+    setFormAreaFilter('');
     setHoursError(null);
     setIsModalOpen(true);
   };
@@ -100,8 +92,7 @@ const Assignments: React.FC = () => {
   const handleOpenEdit = (a: Assignment) => {
     setEditingId(a.id);
     const activity = activities.find(act => act.id === a.activityCatalogId);
-    setFormAreaFilter(activity?.area || ''); // Set form filter to current activity area
-    
+    setFormAreaFilter(activity?.area || '');
     setFormData({
       activityCatalogId: a.activityCatalogId,
       teacherId: a.teacherId,
@@ -127,19 +118,9 @@ const Assignments: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('¿Está seguro que desea eliminar esta asignación? Esta acción no se puede deshacer.')) {
-      deleteAssignment(id);
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!checkHoursAvailability(formData.activityCatalogId, editingId, formData.allocatedHours)) {
-      return;
-    }
-
+    if (!checkHoursAvailability(formData.activityCatalogId, editingId, formData.allocatedHours)) return;
     const payload: Assignment = {
       id: editingId || `AS-${Date.now()}`,
       activityCatalogId: formData.activityCatalogId,
@@ -162,22 +143,12 @@ const Assignments: React.FC = () => {
       progress2: formData.progress2 || 0,
       observation2: formData.observation2 || null,
     };
-
     if (editingId) updateAssignment(payload);
     else addAssignment(payload);
-    
     setIsModalOpen(false);
   };
 
   const totalProgress = (formData.progress1 || 0) + (formData.progress2 || 0);
-  const hasPreviousData = formData.activityCatalogId && getPreviousAssignmentForActivity(formData.activityCatalogId);
-
-  // Activities available for selection in the form based on area filter
-  const availableActivitiesForForm = formAreaFilter 
-    ? activities.filter(a => a.area === formAreaFilter)
-    : activities;
-
-  // List filter logic
   const filteredAssignments = assignments.filter(assign => {
       if (selectedAreaFilter === 'Todas') return true;
       const activity = activities.find(a => a.id === assign.activityCatalogId);
@@ -187,11 +158,14 @@ const Assignments: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-        <h1 className="text-3xl font-bold text-slate-800">Asignación y Evaluación</h1>
+        <div>
+          <h1 className="text-3xl font-black text-uninunez-onix font-heading uppercase tracking-tight">Asignación y Seguimiento</h1>
+          <div className="h-1.5 w-24 bg-uninunez-turquoise mt-2 rounded-full"></div>
+        </div>
         
         <div className="flex gap-3 w-full md:w-auto">
             <select 
-                className="border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="border-2 border-slate-200 rounded-xl px-4 py-2 bg-white text-slate-700 font-bold text-xs focus:ring-4 focus:ring-uninunez-turquoise/20 focus:border-uninunez-turquoise outline-none"
                 value={selectedAreaFilter}
                 onChange={(e) => setSelectedAreaFilter(e.target.value)}
             >
@@ -201,317 +175,242 @@ const Assignments: React.FC = () => {
                 ))}
             </select>
 
-            <button onClick={handleOpenCreate} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm flex items-center whitespace-nowrap">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-            Nueva Asignación
+            <button onClick={handleOpenCreate} className="bg-uninunez-orange hover:bg-uninunez-orange-light text-white px-6 py-2 rounded-xl font-black shadow-lg flex items-center whitespace-nowrap text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+              Nueva Asignación
             </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
-        <table className="min-w-full divide-y divide-slate-200">
+      <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+        <table className="min-w-full divide-y divide-slate-100">
           <thead className="bg-slate-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Docente/Área</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Actividad</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-slate-500 uppercase">Avance</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Estado</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Acciones</th>
+              <th className="px-6 py-4 text-left text-[10px] font-black text-uninunez-ceniza uppercase tracking-widest">Docente / Área</th>
+              <th className="px-6 py-4 text-left text-[10px] font-black text-uninunez-ceniza uppercase tracking-widest">Actividad</th>
+              <th className="px-6 py-4 text-center text-[10px] font-black text-uninunez-ceniza uppercase tracking-widest">Avance Institucional</th>
+              <th className="px-6 py-4 text-left text-[10px] font-black text-uninunez-ceniza uppercase tracking-widest">Estado</th>
+              <th className="px-6 py-4 text-right text-[10px] font-black text-uninunez-ceniza uppercase tracking-widest">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200">
+          <tbody className="divide-y divide-slate-50">
             {filteredAssignments.map(assign => {
               const t = teachers.find(x => x.id === assign.teacherId);
               const a = activities.find(x => x.id === assign.activityCatalogId);
               const currentTotal = (assign.progress1 || 0) + (assign.progress2 || 0);
-              
               return (
-                <tr key={assign.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-4 text-sm font-medium text-slate-900">
-                    <div>{t?.name}</div>
-                    <div className="text-xs font-normal text-slate-500">{a?.area}</div>
+                <tr key={assign.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-6 py-5">
+                    <div className="font-bold text-uninunez-onix text-sm">{t?.name}</div>
+                    <div className="text-[10px] font-black text-uninunez-turquoise uppercase tracking-tight mt-0.5">{a?.area}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-600 max-w-xs truncate" title={a?.name}>{a?.name}</td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-6 py-5">
+                    <div className="text-sm text-slate-600 font-medium max-w-xs truncate" title={a?.name}>{a?.name}</div>
+                  </td>
+                  <td className="px-6 py-5">
                     <div className="flex flex-col items-center">
-                      <span className="text-sm font-bold text-slate-700">{currentTotal}%</span>
-                      <div className="w-24 h-2 bg-slate-200 rounded-full mt-1">
-                        <div className="h-full bg-blue-600 rounded-full" style={{width: `${currentTotal}%`}}></div>
+                      <span className="text-sm font-black text-uninunez-onix mb-1.5">{currentTotal}%</span>
+                      <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner border border-slate-50">
+                        <div className={`h-full rounded-full transition-all duration-700 ${currentTotal === 100 ? 'bg-uninunez-green-jade' : 'bg-uninunez-orange'}`} style={{width: `${currentTotal}%`}}></div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold 
-                      ${assign.status === 'Completado' ? 'bg-green-100 text-green-800' : 
-                        assign.status === 'En Progreso' ? 'bg-yellow-100 text-yellow-800' : 
-                        'bg-slate-100 text-slate-800'}`}>
+                  <td className="px-6 py-5">
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter
+                      ${assign.status === 'Completado' ? 'bg-uninunez-green-jade/10 text-uninunez-green-jade' : 
+                        assign.status === 'En Progreso' ? 'bg-uninunez-orange/10 text-uninunez-orange' : 
+                        'bg-slate-100 text-slate-500'}`}>
                       {assign.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                    <button onClick={() => handleOpenEdit(assign)} className="text-blue-600 hover:text-blue-900 mr-3 flex inline-flex items-center">
-                       <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                       Evaluar
+                  <td className="px-6 py-5 text-right whitespace-nowrap">
+                    <button onClick={() => handleOpenEdit(assign)} className="text-uninunez-turquoise hover:text-uninunez-turquoise-dark font-black text-[10px] uppercase tracking-widest mr-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-uninunez-turquoise/5 transition-colors">
+                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                       Gestionar
                     </button>
-                    <button onClick={() => handleDelete(assign.id)} className="text-red-600 hover:text-red-900">Borrar</button>
+                    <button onClick={() => deleteAssignment(assign.id)} className="text-red-400 hover:text-red-600 font-black text-[10px] uppercase tracking-widest">Eliminar</button>
                   </td>
                 </tr>
               );
             })}
-            {filteredAssignments.length === 0 && (
-                <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center text-slate-500">
-                        No hay asignaciones para el área seleccionada.
-                    </td>
-                </tr>
-            )}
           </tbody>
         </table>
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full p-6 my-8">
-            <div className="flex justify-between items-center mb-6 border-b pb-4">
-              <h2 className="text-xl font-bold text-slate-800">{editingId ? 'Evaluar y Gestionar Asignación' : 'Nueva Asignación'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        <div className="fixed inset-0 bg-uninunez-onix/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-[2rem] shadow-2xl max-w-6xl w-full p-8 my-8 border border-white">
+            <div className="flex justify-between items-center mb-8 border-b border-slate-100 pb-6">
+              <div>
+                <h2 className="text-2xl font-black text-uninunez-onix font-heading uppercase tracking-tight">{editingId ? 'Evaluación Institucional' : 'Nueva Asignación de Actividad'}</h2>
+                <p className="text-uninunez-ceniza text-sm font-medium mt-1">Gestión del Plan de Acción y Trabajo (PAT)</p>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="bg-slate-100 hover:bg-slate-200 p-2 rounded-xl transition-colors">
+                <svg className="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
             
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                {/* Section 1: Assignment Definition */}
-                <div className="space-y-4 lg:col-span-1 border-r border-slate-100 pr-4">
-                  <h3 className="font-semibold text-slate-800 border-b pb-2 text-blue-600">1. Definición</h3>
-                  
-                  {/* Internal Filter by Area */}
-                  <div>
-                    <label className="block text-xs font-bold text-blue-500 mb-1">Filtrar Actividades por Área</label>
-                    <select className="w-full border border-blue-200 bg-blue-50 text-slate-900 rounded text-sm p-2 outline-none focus:ring-1 focus:ring-blue-500"
-                      value={formAreaFilter}
-                      onChange={e => {
-                        setFormAreaFilter(e.target.value);
-                        setFormData({...formData, activityCatalogId: ''}); // Clear selected activity when area changes
-                      }}
-                    >
-                      <option value="">Todas las Áreas</option>
-                      {AREAS.map(area => <option key={area} value={area}>{area}</option>)}
-                    </select>
+                {/* Panel 1 */}
+                <div className="space-y-5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-uninunez-orange flex items-center justify-center text-white font-bold text-sm">1</div>
+                    <h3 className="font-black text-uninunez-onix uppercase text-xs tracking-widest">Parámetros de Actividad</h3>
                   </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Actividad</label>
-                    <select required className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2"
-                      value={formData.activityCatalogId}
-                      onChange={e => {
-                        setFormData({...formData, activityCatalogId: e.target.value});
-                        checkHoursAvailability(e.target.value, editingId, formData.allocatedHours);
-                      }}
-                    >
-                      <option value="">Seleccionar actividad...</option>
-                      {availableActivitiesForForm.map(a => (
-                        <option key={a.id} value={a.id}>{a.name} {!formAreaFilter && `(${a.area})`}</option>
-                      ))}
-                    </select>
-                    {availableActivitiesForForm.length === 0 && formAreaFilter && (
-                      <p className="text-[10px] text-red-500 mt-1">No hay actividades registradas en esta área.</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Persona Responsable</label>
-                    <select required className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2"
-                      value={formData.teacherId}
-                      onChange={e => setFormData({...formData, teacherId: e.target.value})}
-                    >
-                      <option value="">Seleccionar responsable...</option>
-                      {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Proyecto (Opcional)</label>
-                    <select className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2"
-                      value={formData.projectId}
-                      onChange={e => setFormData({...formData, projectId: e.target.value})}
-                    >
-                      <option value="">Sin Proyecto</option>
-                      {projects.map(p => <option key={p.id} value={p.id}>{p.code}</option>)}
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Horas</label>
-                      <input type="number" min="1" required className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2"
-                        value={formData.allocatedHours}
-                        onChange={e => {
-                          const h = parseInt(e.target.value) || 0;
-                          setFormData({...formData, allocatedHours: h});
-                          checkHoursAvailability(formData.activityCatalogId, editingId, h);
-                        }}
-                      />
+                      <label className="block text-[10px] font-black text-uninunez-ceniza uppercase mb-1.5">Área Operativa</label>
+                      <select className="w-full border-2 border-white bg-white rounded-xl text-sm p-3 font-bold focus:ring-4 focus:ring-uninunez-orange/10 focus:border-uninunez-orange outline-none transition-all shadow-sm"
+                        value={formAreaFilter}
+                        onChange={e => { setFormAreaFilter(e.target.value); setFormData({...formData, activityCatalogId: ''}); }}
+                      >
+                        <option value="">Todas las Áreas</option>
+                        {AREAS.map(area => <option key={area} value={area}>{area}</option>)}
+                      </select>
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Estado</label>
-                        <select className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2"
-                            value={formData.status} 
-                            onChange={e => setFormData({...formData, status: e.target.value as any})}
+                      <label className="block text-[10px] font-black text-uninunez-ceniza uppercase mb-1.5">Actividad Específica</label>
+                      <select required className="w-full border-2 border-white bg-white rounded-xl text-sm p-3 font-bold focus:ring-4 focus:ring-uninunez-orange/10 focus:border-uninunez-orange outline-none transition-all shadow-sm"
+                        value={formData.activityCatalogId}
+                        onChange={e => { setFormData({...formData, activityCatalogId: e.target.value}); checkHoursAvailability(e.target.value, editingId, formData.allocatedHours); }}
+                      >
+                        <option value="">Seleccionar...</option>
+                        {activities.filter(a => !formAreaFilter || a.area === formAreaFilter).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-uninunez-ceniza uppercase mb-1.5">Responsable</label>
+                      <select required className="w-full border-2 border-white bg-white rounded-xl text-sm p-3 font-bold focus:ring-4 focus:ring-uninunez-orange/10 focus:border-uninunez-orange outline-none transition-all shadow-sm"
+                        value={formData.teacherId}
+                        onChange={e => setFormData({...formData, teacherId: e.target.value})}
+                      >
+                        <option value="">Seleccionar...</option>
+                        {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-black text-uninunez-ceniza uppercase mb-1.5">Horas</label>
+                        <input type="number" min="1" className="w-full border-2 border-white bg-white rounded-xl text-sm p-3 font-bold focus:ring-4 focus:ring-uninunez-orange/10 focus:border-uninunez-orange outline-none shadow-sm"
+                          value={formData.allocatedHours}
+                          onChange={e => { const h = parseInt(e.target.value) || 0; setFormData({...formData, allocatedHours: h}); checkHoursAvailability(formData.activityCatalogId, editingId, h); }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-uninunez-ceniza uppercase mb-1.5">Estado</label>
+                        <select className="w-full border-2 border-white bg-white rounded-xl text-sm p-3 font-bold focus:ring-4 focus:ring-uninunez-orange/10 focus:border-uninunez-orange outline-none shadow-sm"
+                            value={formData.status} onChange={e => setFormData({...formData, status: e.target.value as any})}
                         >
                             <option value="Planificado">Planificado</option>
                             <option value="En Progreso">En Progreso</option>
                             <option value="Completado">Completado</option>
                         </select>
+                      </div>
                     </div>
+                    {hoursError && <p className="bg-red-50 text-red-500 text-[10px] font-bold p-2 rounded-lg border border-red-100">{hoursError}</p>}
                   </div>
-                   {hoursError && <p className="text-red-500 text-xs">{hoursError}</p>}
                 </div>
 
-                {/* Section 2: Requirements & Deliverables */}
-                <div className="space-y-4 lg:col-span-1 border-r border-slate-100 pr-4">
-                   <div className="flex justify-between items-center border-b pb-2">
-                      <h3 className="font-semibold text-slate-800 text-blue-600">2. Requerimientos</h3>
-                      {hasPreviousData && (
-                        <button 
-                          type="button" 
-                          onClick={handleLoadTemplate}
-                          className="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded hover:bg-blue-100 border border-blue-200 flex items-center gap-1 transition-colors"
-                          title="Cargar meta y entregables de la última vez que se asignó esta actividad"
-                        >
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.477.859h4z"></path></svg>
-                          Cargar última
-                        </button>
-                      )}
+                {/* Panel 2 */}
+                <div className="space-y-5">
+                   <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-uninunez-turquoise flex items-center justify-center text-white font-bold text-sm">2</div>
+                        <h3 className="font-black text-uninunez-onix uppercase text-xs tracking-widest">Metas y Entregables</h3>
+                      </div>
+                      <button type="button" onClick={handleLoadTemplate} className="text-[9px] bg-uninunez-turquoise/10 text-uninunez-turquoise px-3 py-1.5 rounded-lg border border-uninunez-turquoise/20 font-black uppercase tracking-widest hover:bg-uninunez-turquoise hover:text-white transition-all">
+                        Cargar Histórico
+                      </button>
                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Meta</label>
-                      <textarea className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2" rows={2}
-                        value={formData.goal} onChange={e => setFormData({...formData, goal: e.target.value})} />
-                    </div>
-                     <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Entregable 1</label>
-                      <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2"
-                        value={formData.deliverable1} onChange={e => setFormData({...formData, deliverable1: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Entregable 2</label>
-                      <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2"
-                        value={formData.deliverable2} onChange={e => setFormData({...formData, deliverable2: e.target.value})} />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Formatos (sep. por comas)</label>
-                        <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2"
-                            value={formData.requiredFormats} onChange={e => setFormData({...formData, requiredFormats: e.target.value})} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
+                   <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
+                      <div>
+                        <label className="block text-[10px] font-black text-uninunez-ceniza uppercase mb-1.5">Descripción de la Meta</label>
+                        <textarea className="w-full border-2 border-white bg-white rounded-xl text-sm p-3 font-medium focus:ring-4 focus:ring-uninunez-turquoise/10 focus:border-uninunez-turquoise outline-none transition-all shadow-sm" rows={2}
+                          value={formData.goal} onChange={e => setFormData({...formData, goal: e.target.value})} />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-uninunez-ceniza uppercase mb-1.5">Entregable Momento 1</label>
+                        <input type="text" className="w-full border-2 border-white bg-white rounded-xl text-sm p-3 font-medium focus:ring-4 focus:ring-uninunez-turquoise/10 focus:border-uninunez-turquoise outline-none shadow-sm"
+                          value={formData.deliverable1} onChange={e => setFormData({...formData, deliverable1: e.target.value})} />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-uninunez-ceniza uppercase mb-1.5">Entregable Momento 2</label>
+                        <input type="text" className="w-full border-2 border-white bg-white rounded-xl text-sm p-3 font-medium focus:ring-4 focus:ring-uninunez-turquoise/10 focus:border-uninunez-turquoise outline-none shadow-sm"
+                          value={formData.deliverable2} onChange={e => setFormData({...formData, deliverable2: e.target.value})} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-medium text-slate-500 mb-1">Inicio</label>
-                            <input type="date" required className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2" 
+                            <label className="block text-[10px] font-black text-uninunez-ceniza uppercase mb-1.5">Inicio Vigencia</label>
+                            <input type="date" required className="w-full border-2 border-white bg-white rounded-xl text-sm p-3 font-bold focus:ring-4 focus:ring-uninunez-turquoise/10 focus:border-uninunez-turquoise outline-none shadow-sm" 
                             value={formData.startDate} onChange={e => setFormData({...formData, startDate: e.target.value})} />
                         </div>
                          <div>
-                            <label className="block text-xs font-medium text-slate-500 mb-1">Fin</label>
-                            <input type="date" required className="w-full border border-slate-300 bg-white text-slate-900 rounded text-sm p-2"
+                            <label className="block text-[10px] font-black text-uninunez-ceniza uppercase mb-1.5">Fin Vigencia</label>
+                            <input type="date" required className="w-full border-2 border-white bg-white rounded-xl text-sm p-3 font-bold focus:ring-4 focus:ring-uninunez-turquoise/10 focus:border-uninunez-turquoise outline-none shadow-sm"
                             value={formData.endDate} onChange={e => setFormData({...formData, endDate: e.target.value})} />
                         </div>
-                    </div>
-                </div>
-
-                {/* Section 3: Evidence & Evaluation */}
-                <div className="space-y-4 lg:col-span-1 bg-blue-50 p-4 rounded-lg border border-blue-100">
-                   <h3 className="font-semibold text-slate-800 border-b border-blue-200 pb-2 mb-2 flex justify-between items-center">
-                      <span className="text-blue-800">3. Evaluación y Seguimiento</span>
-                      <span className={`text-sm font-bold ${totalProgress === 100 ? 'text-green-600' : 'text-blue-600'}`}>
-                            Total: {totalProgress}%
-                      </span>
-                   </h3>
-                   
-                   {/* Evidence Section */}
-                   <div className="bg-white p-3 rounded border border-slate-200 shadow-sm mb-4">
-                      <div className="flex justify-between mb-2">
-                        <label className="block text-xs font-bold text-slate-700">Evidencia (Link Drive)</label>
-                        {formData.evidenceUrl && (
-                              <a href={formData.evidenceUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline text-xs flex items-center">
-                                  <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                                  Abrir
-                              </a>
-                          )}
-                      </div>
-                      <div className="mb-2">
-                          <input type="url" className="w-full border border-slate-300 bg-slate-50 text-slate-900 rounded text-xs p-2" 
-                              value={formData.evidenceUrl} onChange={e => setFormData({...formData, evidenceUrl: e.target.value})} 
-                              placeholder="https://..."
-                          />
-                      </div>
-                      <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">Logro del Docente</label>
-                          <p className="text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100 italic min-h-[40px]">
-                            {formData.achievementDescription || "Sin descripción ingresada por el docente."}
-                          </p>
                       </div>
                    </div>
+                </div>
 
-                    {/* Moment 1 Evaluation */}
-                    <div className="bg-white p-3 rounded border border-slate-200 shadow-sm">
-                        <div className="text-xs font-bold text-slate-700 uppercase mb-2 border-b pb-1">Momento 1 (Max 50%)</div>
-                        <div className="grid grid-cols-2 gap-2 mb-2">
-                            <div>
-                                <label className="block text-[10px] text-slate-500">Fecha Revisión</label>
-                                <input type="date" className="w-full border border-slate-300 bg-white text-slate-900 rounded text-xs p-1"
-                                    value={formData.review1Date} onChange={e => setFormData({...formData, review1Date: e.target.value})} />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] text-slate-500">Avance (%)</label>
-                                <input type="number" min="0" max="50" className="w-full border border-slate-300 bg-white text-slate-900 rounded text-xs p-1"
-                                    value={formData.progress1} onChange={e => {
-                                        const val = Math.min(50, Math.max(0, parseInt(e.target.value) || 0));
-                                        setFormData({...formData, progress1: val});
-                                    }} />
-                            </div>
+                {/* Panel 3 */}
+                <div className="space-y-5">
+                   <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-uninunez-green-jade flex items-center justify-center text-white font-bold text-sm">3</div>
+                    <h3 className="font-black text-uninunez-onix uppercase text-xs tracking-widest">Seguimiento CTeI</h3>
+                  </div>
+                   <div className="bg-uninunez-green-jade/5 p-6 rounded-3xl border border-uninunez-green-jade/10 space-y-4">
+                        {/* Summary */}
+                        <div className="flex justify-between items-center mb-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                             <span className="text-[10px] font-black text-uninunez-ceniza uppercase tracking-widest">Logro Acumulado</span>
+                             <span className={`text-2xl font-black ${totalProgress === 100 ? 'text-uninunez-green-jade' : 'text-uninunez-orange'}`}>
+                                {totalProgress}%
+                             </span>
                         </div>
-                        <div>
-                           <label className="block text-[10px] text-slate-500 mb-1">Observaciones del Líder</label>
-                           <textarea className="w-full border border-slate-300 bg-white text-slate-900 rounded text-xs p-2" rows={2}
-                              placeholder="Retroalimentación para el docente..."
+
+                        {/* Moment 1 */}
+                        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                            <div className="flex justify-between items-center border-b pb-2">
+                                <span className="text-[9px] font-black text-uninunez-ceniza uppercase">M1 (50%)</span>
+                                <input type="number" min="0" max="50" className="w-16 border-2 border-slate-50 bg-slate-50 rounded-lg text-center text-xs font-black p-1 focus:border-uninunez-turquoise outline-none"
+                                    value={formData.progress1} onChange={e => setFormData({...formData, progress1: Math.min(50, Math.max(0, parseInt(e.target.value) || 0))})} />
+                            </div>
+                            <textarea className="w-full bg-slate-50 border-none rounded-xl text-[11px] p-3 font-medium placeholder:text-slate-300 focus:ring-2 focus:ring-uninunez-turquoise/20 outline-none" rows={2}
+                              placeholder="Observaciones de revisión..."
                               value={formData.observation1} onChange={e => setFormData({...formData, observation1: e.target.value})}
                            />
                         </div>
-                    </div>
 
-                    {/* Moment 2 Evaluation */}
-                    <div className="bg-white p-3 rounded border border-slate-200 shadow-sm">
-                        <div className="text-xs font-bold text-slate-700 uppercase mb-2 border-b pb-1">Momento 2 (Max 50%)</div>
-                        <div className="grid grid-cols-2 gap-2 mb-2">
-                            <div>
-                                <label className="block text-[10px] text-slate-500">Fecha Revisión</label>
-                                <input type="date" className="w-full border border-slate-300 bg-white text-slate-900 rounded text-xs p-1"
-                                    value={formData.review2Date} onChange={e => setFormData({...formData, review2Date: e.target.value})} />
+                        {/* Moment 2 */}
+                        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                            <div className="flex justify-between items-center border-b pb-2">
+                                <span className="text-[9px] font-black text-uninunez-ceniza uppercase">M2 (50%)</span>
+                                <input type="number" min="0" max="50" className="w-16 border-2 border-slate-50 bg-slate-50 rounded-lg text-center text-xs font-black p-1 focus:border-uninunez-turquoise outline-none"
+                                    value={formData.progress2} onChange={e => setFormData({...formData, progress2: Math.min(50, Math.max(0, parseInt(e.target.value) || 0))})} />
                             </div>
-                            <div>
-                                <label className="block text-[10px] text-slate-500">Avance (%)</label>
-                                <input type="number" min="0" max="50" className="w-full border border-slate-300 bg-white text-slate-900 rounded text-xs p-1"
-                                    value={formData.progress2} onChange={e => {
-                                        const val = Math.min(50, Math.max(0, parseInt(e.target.value) || 0));
-                                        setFormData({...formData, progress2: val});
-                                    }} />
-                            </div>
-                        </div>
-                        <div>
-                           <label className="block text-[10px] text-slate-500 mb-1">Observaciones del Líder</label>
-                           <textarea className="w-full border border-slate-300 bg-white text-slate-900 rounded text-xs p-2" rows={2}
-                              placeholder="Retroalimentación para el docente..."
+                            <textarea className="w-full bg-slate-50 border-none rounded-xl text-[11px] p-3 font-medium placeholder:text-slate-300 focus:ring-2 focus:ring-uninunez-turquoise/20 outline-none" rows={2}
+                              placeholder="Observaciones finales..."
                               value={formData.observation2} onChange={e => setFormData({...formData, observation2: e.target.value})}
                            />
                         </div>
-                    </div>
+
+                        {/* Evidence Check */}
+                        {formData.evidenceUrl && (
+                          <div className="pt-2">
+                            <a href={formData.evidenceUrl} target="_blank" rel="noreferrer" className="w-full bg-uninunez-turquoise text-white p-3 rounded-xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-uninunez-turquoise/20">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                Revisar Evidencia
+                            </a>
+                          </div>
+                        )}
+                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-4 border-t pt-6 mt-6">
-                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-700 hover:bg-slate-100 rounded">Cancelar</button>
-                 <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium">Guardar Todo</button>
+              <div className="flex justify-end space-x-4 border-t border-slate-100 pt-8 mt-4">
+                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-3 text-uninunez-ceniza font-black uppercase text-xs tracking-widest hover:bg-slate-100 rounded-2xl transition-all">Descartar</button>
+                 <button type="submit" className="px-10 py-3 bg-uninunez-orange text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:shadow-uninunez-orange/30 transition-all hover:-translate-y-1">Guardar Cambios</button>
               </div>
             </form>
           </div>

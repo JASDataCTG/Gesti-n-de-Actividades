@@ -11,22 +11,32 @@ const Sidebar: React.FC = () => {
     return (
       <Link
         to={to}
-        className={`flex items-center space-x-3 px-6 py-3 transition-colors duration-200 ${
+        className={`flex items-center space-x-3 px-6 py-3 transition-all duration-200 ${
           isActive 
-            ? 'bg-blue-600 text-white border-r-4 border-blue-800' 
+            ? 'bg-uninunez-orange text-white border-r-8 border-uninunez-orange-light shadow-lg scale-105 z-10' 
             : 'text-slate-400 hover:bg-slate-800 hover:text-white'
         }`}
       >
-        {icon}
-        <span className="font-medium">{label}</span>
+        <div className={`${isActive ? 'text-white' : 'text-uninunez-turquoise'}`}>
+          {icon}
+        </div>
+        <span className={`font-semibold text-sm tracking-wide ${isActive ? 'font-bold' : ''}`}>{label}</span>
       </Link>
     );
   };
 
   return (
-    <div className="w-64 bg-slate-900 min-h-screen flex flex-col fixed left-0 top-0 shadow-xl z-20">
-      <div className="h-20 flex items-center justify-center border-b border-slate-800 bg-slate-900">
-        <h1 className="text-2xl font-bold text-blue-400 tracking-wider">GEST<span className="text-white">ACAD</span></h1>
+    <div className="w-64 bg-uninunez-onix min-h-screen flex flex-col fixed left-0 top-0 shadow-2xl z-20 border-r border-slate-700">
+      <div className="h-24 flex flex-col items-center justify-center bg-white p-4">
+        <div className="flex items-center gap-2">
+            <div className="bg-uninunez-orange w-10 h-10 rounded-lg flex items-center justify-center text-white font-black text-xl italic shadow-md">
+                UN
+            </div>
+            <div className="flex flex-col">
+                <span className="text-uninunez-onix font-extrabold text-sm tracking-tighter leading-none">INÚÑEZ</span>
+                <span className="text-[8px] text-uninunez-ceniza font-medium uppercase tracking-widest mt-0.5">Gestor Académico</span>
+            </div>
+        </div>
       </div>
       
       <nav className="flex-1 py-6 space-y-1 overflow-y-auto">
@@ -54,7 +64,7 @@ const Sidebar: React.FC = () => {
             />
             <NavItem 
               to="/teachers" 
-              label="Personas" 
+              label="Docentes" 
               icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>} 
             />
             <NavItem 
@@ -81,22 +91,22 @@ const Sidebar: React.FC = () => {
         )}
       </nav>
       
-      <div className="p-4 border-t border-slate-800 bg-slate-900">
-        <div className="mb-4">
-          <p className="text-xs text-slate-500 uppercase font-bold">Usuario</p>
-          <p className="text-sm text-white font-medium truncate">
-            {role === 'leader' ? 'Líder de Área' : currentUser?.name}
+      <div className="p-4 border-t border-slate-700 bg-uninunez-onix">
+        <div className="mb-4 px-2">
+          <p className="text-[10px] text-uninunez-orange font-black uppercase tracking-widest">Usuario</p>
+          <p className="text-sm text-white font-bold truncate">
+            {role === 'leader' ? 'Líder Institucional' : currentUser?.name}
           </p>
-          <p className="text-xs text-slate-400 truncate">
-            {role === 'leader' ? 'Administrador' : currentUser?.email}
+          <p className="text-[11px] text-slate-400 truncate italic">
+            {role === 'leader' ? 'Administrador CTeI' : currentUser?.email}
           </p>
         </div>
         <button 
           onClick={logout}
-          className="flex items-center text-red-400 hover:text-red-300 transition-colors w-full"
+          className="flex items-center text-uninunez-turquoise hover:text-white hover:bg-uninunez-turquoise px-3 py-2 rounded-lg transition-all w-full font-bold text-xs"
         >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-          <span className="text-sm font-medium">Cerrar Sesión</span>
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+          Cerrar Sesión
         </button>
       </div>
     </div>

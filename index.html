@@ -3,16 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gestor Académico CTeI</title>
-    <!-- Tailwind via CDN for simplicity in this setup -->
+    <title>Gestor Académico CTeI - Uninúñez</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              uninunez: {
+                orange: {
+                  DEFAULT: '#F07E12',
+                  light: '#F39200',
+                },
+                turquoise: {
+                  dark: '#249A8C',
+                  DEFAULT: '#14AA9F',
+                },
+                green: {
+                  jade: '#2FAC66',
+                  lima: '#8CC04D',
+                },
+                onix: '#3C3C3B',
+                ceniza: '#575756',
+              }
+            },
+            fontFamily: {
+              sans: ['Roboto', 'sans-serif'],
+              heading: ['Montserrat', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
     <style>
-      body { font-family: 'Inter', sans-serif; }
+      body { font-family: 'Roboto', sans-serif; }
+      h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
       ::-webkit-scrollbar { width: 8px; height: 8px; }
       ::-webkit-scrollbar-track { background: #f1f5f9; }
-      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      ::-webkit-scrollbar-thumb { background: #F07E12; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #F39200; }
     </style>
 <script type="importmap">
 {
