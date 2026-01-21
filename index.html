@@ -2,8 +2,17 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Gestor Académico CTeI - Uninúñez</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#F07E12" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CTeI Núñez" />
+    <link rel="apple-touch-icon" href="https://axis.uninunez.edu.co/images/uninunez/vm/logoqteal.svg" />
+    <link rel="manifest" href="/manifest.json" />
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script>
@@ -37,12 +46,17 @@
       }
     </script>
     <style>
-      body { font-family: 'Roboto', sans-serif; }
+      body { font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
       h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
-      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
       ::-webkit-scrollbar-track { background: #f1f5f9; }
-      ::-webkit-scrollbar-thumb { background: #F07E12; border-radius: 4px; }
-      ::-webkit-scrollbar-thumb:hover { background: #F39200; }
+      ::-webkit-scrollbar-thumb { background: #F07E12; border-radius: 10px; }
+      
+      /* Smooth transitions for sidebar */
+      .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+      
+      /* Fix for mobile height issues */
+      .h-screen-safe { height: 100vh; height: 100dvh; }
     </style>
 <script type="importmap">
 {
@@ -59,7 +73,7 @@
 }
 </script>
 </head>
-  <body class="bg-slate-50 text-slate-900 antialiased">
+  <body class="bg-slate-50 text-slate-900 antialiased overflow-x-hidden">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
