@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import { Assignment, ActivityArea } from '../types';
@@ -8,6 +9,7 @@ const Assignments: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [hoursError, setHoursError] = useState<string | null>(null);
   const [selectedAreaFilter, setSelectedAreaFilter] = useState<string>('Todas');
+  const [selectedTeacherFilter, setSelectedTeacherFilter] = useState<string>('Todos');
   const [formAreaFilter, setFormAreaFilter] = useState<string>('');
 
   const AREAS: ActivityArea[] = [
@@ -42,6 +44,9 @@ const Assignments: React.FC = () => {
   };
 
   const [formData, setFormData] = useState(initialFormState);
+
+  // Define totalProgress to fix the reference errors on lines 380 and 381
+  const totalProgress = (formData.progress1 || 0) + (formData.progress2 || 0);
 
   const getPreviousAssignmentForActivity = (activityId: string) => {
     const activityAssignments = assignments
@@ -148,11 +153,10 @@ const Assignments: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const totalProgress = (formData.progress1 || 0) + (formData.progress2 || 0);
   const filteredAssignments = assignments.filter(assign => {
-      if (selectedAreaFilter === 'Todas') return true;
-      const activity = activities.find(a => a.id === assign.activityCatalogId);
-      return activity?.area === selectedAreaFilter;
+      const areaMatch = selectedAreaFilter === 'Todas' || activities.find(a => a.id === assign.activityCatalogId)?.area === selectedAreaFilter;
+      const teacherMatch = selectedTeacherFilter === 'Todos' || assign.teacherId === selectedTeacherFilter;
+      return areaMatch && teacherMatch;
   });
 
   return (
@@ -164,6 +168,17 @@ const Assignments: React.FC = () => {
         </div>
         
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <select 
+                className="w-full sm:w-auto border-2 border-slate-200 rounded-xl px-4 py-2 bg-white text-slate-700 font-bold text-xs focus:ring-4 focus:ring-uninunez-turquoise/20 focus:border-uninunez-turquoise outline-none"
+                value={selectedTeacherFilter}
+                onChange={(e) => setSelectedTeacherFilter(e.target.value)}
+            >
+                <option value="Todos">Todos los Docentes</option>
+                {teachers.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+            </select>
+
             <select 
                 className="w-full sm:w-auto border-2 border-slate-200 rounded-xl px-4 py-2 bg-white text-slate-700 font-bold text-xs focus:ring-4 focus:ring-uninunez-turquoise/20 focus:border-uninunez-turquoise outline-none"
                 value={selectedAreaFilter}
@@ -233,6 +248,13 @@ const Assignments: React.FC = () => {
                   </tr>
                 );
               })}
+              {filteredAssignments.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-slate-400 font-medium italic">
+                    No se encontraron asignaciones con los filtros seleccionados.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
