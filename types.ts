@@ -1,10 +1,22 @@
 
+export interface Faculty {
+  id: string;
+  name: string;
+}
+
+export interface Program {
+  id: string;
+  name: string;
+  facultyId: string;
+}
+
 export interface Teacher {
   id: string;
   name: string;
   email: string;
   idNumber: string; // Número de identificación / Password
   contractType: 'Tiempo Completo' | 'Medio Tiempo' | 'Catedrático';
+  programId?: string | null; // Asociación a un programa académico
 }
 
 export type ActivityArea =

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DataProvider } from './context/DataContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -10,6 +11,7 @@ import Teachers from './pages/Teachers';
 import Assignments from './pages/Assignments';
 import Reports from './pages/Reports';
 import Projects from './pages/Projects';
+import Faculties from './pages/Faculties';
 import TeacherPortal from './pages/TeacherPortal';
 
 const AppContent: React.FC = () => {
@@ -36,7 +38,7 @@ const AppContent: React.FC = () => {
             alt="Logo" 
             className="h-8 w-auto"
           />
-          <div className="w-10"></div> {/* Spacer for symmetry */}
+          <div className="w-10"></div>
         </header>
 
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
@@ -47,6 +49,7 @@ const AppContent: React.FC = () => {
               {role === 'leader' ? (
                 <>
                   <Route path="/" element={<Dashboard />} />
+                  <Route path="/faculties" element={<Faculties />} />
                   <Route path="/activities" element={<Activities />} />
                   <Route path="/teachers" element={<Teachers />} />
                   <Route path="/assignments" element={<Assignments />} />
