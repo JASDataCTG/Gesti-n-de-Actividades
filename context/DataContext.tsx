@@ -44,66 +44,58 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchTableData = async <T,>(
+  const fetchTable = async <T,>(
     tableName: string,
     initialData: T[],
     setter: (data: T[]) => void
   ) => {
     try {
       const { data, error } = await supabase.from(tableName).select('*');
-      if (error) {
-        console.warn(`Error cargando tabla ${tableName}:`, error.message);
-        // Si la tabla no existe o hay error, usamos los datos iniciales locales
-        setter(initialData);
-        return;
-      }
+      if (error) throw error;
       
       if (!data || data.length === 0) {
-        // Intentar sembrar datos iniciales si la tabla está vacía
+        // Sembrar datos iniciales si está vacío
         try {
           await supabase.from(tableName).insert(initialData);
         } catch (e) {
-          console.warn(`No se pudieron sembrar datos en ${tableName}:`, e);
+          console.error(`Error sembrando ${tableName}:`, e);
         }
         setter(initialData);
       } else {
         setter(data);
       }
     } catch (err) {
-      console.error(`Fallo crítico en fetchTableData para ${tableName}:`, err);
+      console.warn(`Tabla ${tableName} no disponible o vacía, usando locales:`, err);
       setter(initialData);
     }
   };
 
   const fetchData = async () => {
     setLoading(true);
-    
-    // Ejecutamos las cargas en paralelo pero de forma resiliente
-    await Promise.all([
-      fetchTableData('faculties', INITIAL_FACULTIES, setFaculties),
-      fetchTableData('programs', INITIAL_PROGRAMS, setPrograms),
-      fetchTableData('teachers', INITIAL_TEACHERS, setTeachers),
-      fetchTableData('projects', INITIAL_PROJECTS, setProjects),
-      fetchTableData('activities', INITIAL_ACTIVITIES, setActivities),
-      // Las asignaciones no tienen datos iniciales estáticos, se cargan directo
-      (async () => {
-        try {
-          const { data, error } = await supabase.from('assignments').select('*');
-          if (!error && data) setAssignments(data);
-        } catch (e) {
-          console.warn("Error cargando asignaciones:", e);
-        }
-      })()
-    ]);
+    try {
+      // Cargar tablas secuencialmente para mayor estabilidad
+      await fetchTable('faculties', INITIAL_FACULTIES, setFaculties);
+      await fetchTable('programs', INITIAL_PROGRAMS, setPrograms);
+      await fetchTable('teachers', INITIAL_TEACHERS, setTeachers);
+      await fetchTable('projects', INITIAL_PROJECTS, setProjects);
+      await fetchTable('activities', INITIAL_ACTIVITIES, setActivities);
+      
+      const { data: assignData } = await supabase.from('assignments').select('*');
+      if (assignData) setAssignments(assignData);
 
-    setLoading(false);
+    } catch (err) {
+      console.error("Error crítico cargando datos:", err);
+    } finally {
+      // ESTO ES CRUCIAL: Siempre quitamos el loading
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  // --- CRUD Actions con manejo de errores ---
+  // --- CRUD Actions ---
   const addFaculty = async (f: Faculty) => {
     const { error } = await supabase.from('faculties').insert(f);
     if (!error) setFaculties(prev => [...prev, f]);
