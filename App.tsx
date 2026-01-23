@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { DataProvider, useData } from './context/DataContext';
+import { DataProvider } from './context/DataContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
@@ -16,23 +16,7 @@ import TeacherPortal from './pages/TeacherPortal';
 
 const AppContent: React.FC = () => {
   const { role } = useAuth();
-  const { loading } = useData();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // Pantalla de carga mientras se sincroniza con Supabase
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-uninunez-onix flex flex-col items-center justify-center p-6">
-        <div className="relative">
-          <div className="w-20 h-20 border-4 border-uninunez-turquoise/20 border-t-uninunez-turquoise rounded-full animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <img src="https://axis.uninunez.edu.co/images/uninunez/vm/logoqteal.svg" alt="loading" className="h-6 w-auto opacity-50" />
-          </div>
-        </div>
-        <p className="mt-8 text-white font-black text-[10px] uppercase tracking-[0.4em] animate-pulse">Sincronizando Sistema...</p>
-      </div>
-    );
-  }
 
   if (!role) {
     return <Login />;
