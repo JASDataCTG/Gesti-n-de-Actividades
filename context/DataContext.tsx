@@ -44,76 +44,66 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchTableData = async <T,>(
+    tableName: string,
+    initialData: T[],
+    setter: (data: T[]) => void
+  ) => {
+    try {
+      const { data, error } = await supabase.from(tableName).select('*');
+      if (error) {
+        console.warn(`Error cargando tabla ${tableName}:`, error.message);
+        // Si la tabla no existe o hay error, usamos los datos iniciales locales
+        setter(initialData);
+        return;
+      }
+      
+      if (!data || data.length === 0) {
+        // Intentar sembrar datos iniciales si la tabla está vacía
+        try {
+          await supabase.from(tableName).insert(initialData);
+        } catch (e) {
+          console.warn(`No se pudieron sembrar datos en ${tableName}:`, e);
+        }
+        setter(initialData);
+      } else {
+        setter(data);
+      }
+    } catch (err) {
+      console.error(`Fallo crítico en fetchTableData para ${tableName}:`, err);
+      setter(initialData);
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
-    try {
-      // 1. Fetch Faculties
-      const { data: facData, error: facErr } = await supabase.from('faculties').select('*');
-      if (facErr) throw facErr;
-      if (!facData || facData.length === 0) {
-        await supabase.from('faculties').insert(INITIAL_FACULTIES);
-        setFaculties(INITIAL_FACULTIES);
-      } else {
-        setFaculties(facData);
-      }
+    
+    // Ejecutamos las cargas en paralelo pero de forma resiliente
+    await Promise.all([
+      fetchTableData('faculties', INITIAL_FACULTIES, setFaculties),
+      fetchTableData('programs', INITIAL_PROGRAMS, setPrograms),
+      fetchTableData('teachers', INITIAL_TEACHERS, setTeachers),
+      fetchTableData('projects', INITIAL_PROJECTS, setProjects),
+      fetchTableData('activities', INITIAL_ACTIVITIES, setActivities),
+      // Las asignaciones no tienen datos iniciales estáticos, se cargan directo
+      (async () => {
+        try {
+          const { data, error } = await supabase.from('assignments').select('*');
+          if (!error && data) setAssignments(data);
+        } catch (e) {
+          console.warn("Error cargando asignaciones:", e);
+        }
+      })()
+    ]);
 
-      // 2. Fetch Programs
-      const { data: progData, error: progErr } = await supabase.from('programs').select('*');
-      if (progErr) throw progErr;
-      if (!progData || progData.length === 0) {
-        await supabase.from('programs').insert(INITIAL_PROGRAMS);
-        setPrograms(INITIAL_PROGRAMS);
-      } else {
-        setPrograms(progData);
-      }
-
-      // 3. Fetch Teachers
-      const { data: teachersData, error: teachersError } = await supabase.from('teachers').select('*');
-      if (teachersError) throw teachersError;
-      if (!teachersData || teachersData.length === 0) {
-         await supabase.from('teachers').insert(INITIAL_TEACHERS);
-         setTeachers(INITIAL_TEACHERS);
-      } else {
-         setTeachers(teachersData);
-      }
-
-      // 4. Projects
-      const { data: projectsData, error: projectsError } = await supabase.from('projects').select('*');
-      if (projectsError) throw projectsError;
-      if (!projectsData || projectsData.length === 0) {
-         await supabase.from('projects').insert(INITIAL_PROJECTS);
-         setProjects(INITIAL_PROJECTS);
-      } else {
-         setProjects(projectsData);
-      }
-
-      // 5. Activities
-      const { data: activitiesData, error: activitiesError } = await supabase.from('activities').select('*');
-      if (activitiesError) throw activitiesError;
-      if (!activitiesData || activitiesData.length === 0) {
-         await supabase.from('activities').insert(INITIAL_ACTIVITIES);
-         setActivities(INITIAL_ACTIVITIES);
-      } else {
-         setActivities(activitiesData);
-      }
-
-      // 6. Assignments
-      const { data: assignmentsData, error: assignmentsError } = await supabase.from('assignments').select('*');
-      if (assignmentsError) throw assignmentsError;
-      setAssignments(assignmentsData || []);
-
-    } catch (error) {
-      console.error('Error loading data from Supabase:', error);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
   };
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  // --- CRUD Actions ---
+  // --- CRUD Actions con manejo de errores ---
   const addFaculty = async (f: Faculty) => {
     const { error } = await supabase.from('faculties').insert(f);
     if (!error) setFaculties(prev => [...prev, f]);

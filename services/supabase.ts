@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Fallback credentials (hardcoded to ensure app works if env vars fail)
@@ -8,22 +9,22 @@ let supabaseUrl = FALLBACK_URL;
 let supabaseKey = FALLBACK_KEY;
 
 try {
-  // Robust check for Vite environment variables
-  // We check if import.meta and import.meta.env exist before accessing properties
+  // Robust check for environment variables
+  if (typeof process !== 'undefined' && process.env) {
+    if (process.env.VITE_SUPABASE_URL) supabaseUrl = process.env.VITE_SUPABASE_URL;
+    if (process.env.VITE_SUPABASE_ANON_KEY) supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+  }
+  
+  // Also check import.meta for Vite-specific build
+  // @ts-ignore
   if (typeof import.meta !== 'undefined' && import.meta.env) {
-    if (import.meta.env.VITE_SUPABASE_URL) {
-      supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    }
-    if (import.meta.env.VITE_SUPABASE_ANON_KEY) {
-      supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    }
+    // @ts-ignore
+    if (import.meta.env.VITE_SUPABASE_URL) supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    // @ts-ignore
+    if (import.meta.env.VITE_SUPABASE_ANON_KEY) supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   }
 } catch (error) {
-  // If accessing import.meta fails, we silently ignore and use fallbacks
-  console.warn("Using fallback Supabase credentials.");
+  console.warn("Using fallback Supabase credentials due to env access error.");
 }
-
-// DEBUG: Verificar conexión en consola del navegador (F12)
-console.log("🔌 Inicializando Supabase con URL:", supabaseUrl);
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
